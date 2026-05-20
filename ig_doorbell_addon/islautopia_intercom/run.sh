@@ -36,19 +36,19 @@ echo "Generando Caddyfile con Autoridad de Certificación Interna..."
 cat << EOF > /etc/Caddyfile
 {
     admin off
-    # Deshabilitamos la gestión automática de puertos
     auto_https off
 }
 
 :8443 {
-    # CORRECTO: self_signed debe ir dentro de llaves
-    tls {
-        self_signed
-    }
-    
+    # Usamos 'internal' que es la forma estándar de Caddy para CA local
+    tls internal
+
     handle / {
-        respond "Si esto carga, el SSL funciona"
+        respond "Motor Islautopia operativo"
     }
+
+    # Definimos el proxy inverso aquí
+    reverse_proxy homeassistant:8123
 }
 EOF
 
