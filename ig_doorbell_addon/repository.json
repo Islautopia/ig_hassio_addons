@@ -1,5 +1,5 @@
 {
   "name": "Islautopia Add-ons",
-  "url": "https://github.com/islautopia/ig_doorbell_hass_addon",
-  "maintainer": "Iñaki"
+  "url": "https://github.com/Islautopia/ig_hassio_addons/tree/master/ig_doorbell_addon",
+  "maintainer": "@Islautopia"
 }
