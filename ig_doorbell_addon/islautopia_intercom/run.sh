@@ -24,14 +24,21 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERACIÓN DEL CADDYFILE
+# 2. GENERAR EL CADDYFILE (A prueba de fallos para Alpine)
 # ==============================================================================
-# Nota: Quitamos auto_https off para dejar que Caddy gestione bien el handshake 
-# de forma estándar, ya que al forzarlo a veces corrompe la sesión SSL.
+echo "Generando Caddyfile optimizado para entorno aislado..."
 
 cat << EOF > /etc/Caddyfile
+{
+    admin off
+    auto_https disable_redirects
+}
+
 :8443 {
-    tls internal
+    # Forzamos a Caddy a usar TLS interno puro sin intentar instalarse en el sistema
+    tls internal {
+        on_demand
+    }
     
     # Proxy para el WebRTC
     reverse_proxy /api/ws* 127.0.0.1:1984
