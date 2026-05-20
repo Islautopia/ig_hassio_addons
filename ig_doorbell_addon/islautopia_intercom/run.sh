@@ -42,9 +42,9 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE DINÁMICO (Sintaxis Corregida)
+# 2. GENERAR EL CADDYFILE DINÁMICO (Solución Definitiva SNI / SAN IP)
 # ==============================================================================
-echo "Generando Caddyfile dinámico..."
+echo "Generando Caddyfile dinámico para ${HASS_IP}..."
 
 cat << EOF > /etc/Caddyfile
 {
@@ -52,11 +52,12 @@ cat << EOF > /etc/Caddyfile
     auto_https disable_redirects
 }
 
-:8443 {
-    # Forzamos a la CA interna a firmar con la IP real de HASS y los dominios locales
-    tls internal {
-        on_demand
-    }
+# Definimos la IP en la cabecera para que sea el dominio principal
+https://${HASS_IP}:8443, https://localhost:8443 {
+    
+    # CRÍTICO: Quitamos on_demand para que Caddy emita el certificado con la IP
+    # en el campo SAN directamente en el arranque del servidor.
+    tls internal
 
     # 1. Endpoint directo para la descarga del archivo físico
     handle /root.crt {
@@ -78,11 +79,14 @@ cat << EOF > /etc/Caddyfile
     <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f6f9; color: #333;">
         <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h1 style="color: #1a1a1a; margin-bottom: 10px;">Instalación de Certificado</h1>
-            <p style="color: #666; margin-bottom: 30px;">El certificado raíz está listo para la dirección de tu Home Assistant.</p>
+            <p style="color: #666; margin-bottom: 30px;">El certificado raíz se ha generado correctamente para la IP ${HASS_IP}.</p>
             <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
                 <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                    📥 Descargar Certificado root.crt
+                    📥 Descargar root.crt Definicitivo
                 </a>
+                <p style="margin-top: 15px; font-size: 0.85em; color: #555; line-height: 1.4; text-align: left;">
+                    💡 <b>Último paso:</b> Instala este archivo en Windows en "Entidades de certificación raíz de confianza" para activar el candado verde en tu IP.
+                </p>
             </div>
             <a href="/" style="color: #007bff; text-decoration: none; font-size: 0.95em;">Ir a Home Assistant →</a>
         </div>
