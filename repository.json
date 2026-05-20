@@ -1,5 +1,5 @@
 {
-    "name": "Islautopia Garage addons repository",
-    "url": "https://github.com/Islautopia/ig_hassio_addons",
-    "maintainer": "@Islautopia",
+  "name": "Islautopia Add-ons",
+  "url": "https://github.com/Islautopia/ig_hassio_addons",
+  "maintainer": "Iñaki <garage@islautopia.com>"
 }
