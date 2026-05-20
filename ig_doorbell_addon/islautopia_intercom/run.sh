@@ -71,8 +71,11 @@ echo "Iniciando motor de vídeo WebRTC (go2rtc)..."
 /usr/local/bin/go2rtc -config /etc/go2rtc.yaml &
 
 echo "Iniciando pasarela HTTPS Local Autónoma (Caddy)..."
-# Apuntamos a la carpeta de configuración donde reside configuration.yaml
+
 export XDG_DATA_HOME="/config/islautopia"
 export XDG_CONFIG_HOME="/config/islautopia"
 
-caddy run --config /etc/Caddyfile --adapter caddyfile --env CADDY_DATA=/config/islautopia
+# ... tu código de configuración (generación de Caddyfile, etc.) ...
+
+# Lanzamos Caddy sin la bandera --env que nos da error
+caddy run --config /etc/Caddyfile --adapter caddyfile
