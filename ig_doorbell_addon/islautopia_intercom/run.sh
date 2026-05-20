@@ -42,9 +42,9 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE DINÁMICO (Solución definitiva Handshake IP)
+# 2. GENERAR EL CADDYFILE DINÁMICO (Sintaxis Corregida)
 # ==============================================================================
-echo "Generando Caddyfile dinámico con emisor local puro..."
+echo "Generando Caddyfile dinámico..."
 
 cat << EOF > /etc/Caddyfile
 {
@@ -52,14 +52,10 @@ cat << EOF > /etc/Caddyfile
     auto_https disable_redirects
 }
 
-# Forzamos la escucha en el puerto con los hosts limpios
-${CADDY_HOSTS} {
-    # Configuramos el TLS interno indicando explícitamente el emisor local
+:8443 {
+    # Forzamos a la CA interna a firmar con la IP real de HASS y los dominios locales
     tls internal {
         on_demand
-        issuer internal {
-            ca local
-        }
     }
 
     # 1. Endpoint directo para la descarga del archivo físico
@@ -82,10 +78,10 @@ ${CADDY_HOSTS} {
     <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f6f9; color: #333;">
         <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h1 style="color: #1a1a1a; margin-bottom: 10px;">Instalación de Certificado</h1>
-            <p style="color: #666; margin-bottom: 30px;">El certificado raíz está listo para la dirección: ${HASS_IP}.</p>
+            <p style="color: #666; margin-bottom: 30px;">El certificado raíz está listo para la dirección de tu Home Assistant.</p>
             <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
                 <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                    📥 Descargar root.crt
+                    📥 Descargar Certificado root.crt
                 </a>
             </div>
             <a href="/" style="color: #007bff; text-decoration: none; font-size: 0.95em;">Ir a Home Assistant →</a>
