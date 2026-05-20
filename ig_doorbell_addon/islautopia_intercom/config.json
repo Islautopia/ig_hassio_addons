@@ -28,7 +28,7 @@
     "intercom_ip": "str",
     "puerto_webrtc": "int"
   },
-  "map": {
+  "map": [
     "config:rw"
-  }
+  ]
 }
