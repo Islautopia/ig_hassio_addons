@@ -47,6 +47,11 @@ cat << EOF > /etc/Caddyfile
     # 1. Endpoint directo para la descarga del archivo físico
     handle /root.crt {
         root * /config/islautopia/caddy/pki/authorities/local/
+        
+        # Forzamos al navegador a descargarlo en lugar de mostrarlo
+        header Content-Disposition "attachment; filename=root.crt"
+        header Content-Type "application/x-x509-ca-cert"
+        
         file_server
     }
 
