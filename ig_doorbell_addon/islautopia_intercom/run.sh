@@ -40,38 +40,23 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
+    # Forzamos TLS y evitamos que Caddy intente buscar el puerto 80
     tls internal
 
-    # Ruta para descargar el certificado directamente
+    # Ruta de descarga del certificado
     handle /root.crt {
         root * /config/islautopia/caddy/pki/authorities/local/
         file_server
     }
 
-    # Página de bienvenida profesional
+    # Landing page simple
     handle / {
-        respond \`
-        <html>
-            <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #f0f2f5;">
-                <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h1>Islautopia Intercom</h1>
-                    <p>El motor está funcionando correctamente.</p>
-                    <a href="/root.crt" style="display: inline-block; margin: 20px 0; padding: 15px 25px; background: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                        📥 Descargar Certificado Raíz (root.crt)
-                    </a>
-                    <p style="font-size: 0.85em; color: #666;">
-                        Instala este archivo en tu dispositivo para eliminar los errores de seguridad SSL.
-                    </p>
-                </div>
-            </body>
-        </html>
-        \`
+        respond "Motor Islautopia funcionando."
     }
 
+    # Proxies
     @go2rtc {
-        path /api/ws*
-        path /api/webrtc*
-        path /api/streams*
+        path /api/ws* /api/webrtc* /api/streams*
     }
     handle @go2rtc {
         reverse_proxy 127.0.0.1:1984
