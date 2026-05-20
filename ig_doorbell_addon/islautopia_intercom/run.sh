@@ -59,7 +59,7 @@ else
 fi
 
 # ==============================================================================
-# 3. GENERAR EL CADDYFILE PLANO (Proxies corregidos para POST y WS)
+# 3. GENERAR EL CADDYFILE PLANO (Rutas de API discriminadas)
 # ==============================================================================
 echo "Generando Caddyfile..."
 
@@ -70,7 +70,7 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
-    # Le pasamos los archivos generados por OpenSSL
+    # Archivos planos de OpenSSL
     tls ${CERT_FILE} ${KEY_FILE}
 
     # 1. Endpoint directo para descargar el certificado
@@ -104,13 +104,15 @@ cat << EOF > /etc/Caddyfile
 HTML
     }
 
-    # 3. PARCHE CRÍTICO: Redirección universal de la API de go2rtc (Sintaxis correcta)
-    # Cualquier petición a /api/ws, /api/webrtc o /api/streams irá de cabeza a go2rtc
-    handle /api/* {
+    # 3. EXCLUSIVO GO2RTC: Solo capturamos lo que usa nuestra tarjeta intercom
+    handle /api/webrtc* {
+        reverse_proxy 127.0.0.1:1984
+    }
+    handle /api/ws* {
         reverse_proxy 127.0.0.1:1984
     }
 
-    # 4. LA RAÍZ VA A HASS
+    # 4. TODO LO DEMÁS (Incluyendo el /api/websocket de HASS) va al núcleo de HA
     handle {
         reverse_proxy homeassistant:8123
     }
