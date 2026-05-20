@@ -1,0 +1,34 @@
+{
+  "name": "Islautopia Intercom & SSL Gateway",
+  "version": "1.4.14",
+  "slug": "islautopia_intercom",
+  "description": "Motor WebRTC y pasarela HTTPS local autónoma con certificado autofirmado para tu videoportero.",
+  "arch": ["aarch64", "amd64", "armv7"],
+  "startup": "application",
+  "boot": "auto",
+  "ports": {
+    "8443/tcp": 8443,
+    "1984/tcp": null, 
+    "8565/tcp": 8565,
+    "8565/udp": 8565
+  },
+  "ports_description": {
+    "8443/tcp": "Pasarela HTTPS segura local (Acceso LAN seguro para audio bidireccional)",
+    "1984/tcp": "Interfaz de go2rtc (Déjalo vacío para evitar choques con Frigate)",
+    "8565/tcp": "Señalización WebRTC TCP (Modificado para evitar a Frigate)",
+    "8565/udp": "Tráfico de vídeo WebRTC UDP"
+  },
+  "options": {
+    "nombre_dispositivo": "videoportero",
+    "intercom_ip": "192.168.1.100",
+    "puerto_webrtc": 8565
+  },
+  "schema": {
+    "nombre_dispositivo": "str",
+    "intercom_ip": "str",
+    "puerto_webrtc": "int"
+  },
+  "map": {
+    "config:rw"
+  }
+}
