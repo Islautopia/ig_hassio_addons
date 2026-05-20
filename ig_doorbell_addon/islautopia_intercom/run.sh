@@ -41,8 +41,10 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
-    # Cambiamos internal por self_signed
-    tls self_signed
+    # CORRECTO: self_signed debe ir dentro de llaves
+    tls {
+        self_signed
+    }
     
     handle / {
         respond "Si esto carga, el SSL funciona"
