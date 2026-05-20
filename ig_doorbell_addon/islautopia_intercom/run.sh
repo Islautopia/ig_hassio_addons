@@ -1,13 +1,13 @@
 #!/bin/bash
 
-echo "Iniciando Islautopia Intercom Engine (Modo Local CA)..."
+echo "Iniciando Islautopia Intercom Engine (Modo Local SSL)..."
 
 # ==============================================================================
 # 1. PREPARACIÓN DE DIRECTORIOS Y DETECCIÓN DE IPS
 # ==============================================================================
 export XDG_DATA_HOME="/config/islautopia"
 export XDG_CONFIG_HOME="/config/islautopia"
-mkdir -p /config/islautopia
+mkdir -p /config/islautopia/certs
 
 CONFIG_PATH="/data/options.json"
 
@@ -22,29 +22,44 @@ fi
 
 [ -z "$NOMBRE_DISPOSITIVO" ] || [ "$NOMBRE_DISPOSITIVO" = "null" ] && NOMBRE_DISPOSITIVO="videoportero"
 
-# 🔍 DETECCIÓN DINÁMICA DE LA IP DE HOME ASSISTANT
-# Consultamos a la API del Supervisor usando el token nativo del contenedor
+# DETECCIÓN DE LA IP DE HASS
 echo "Detectando IP local de Home Assistant..."
 HASS_IP=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq --raw-output '.data.interfaces[] | select(.primary==true) | .ipv4.address[0]' | cut -d'/' -f1)
 
-# Si por algún motivo falla la API, ponemos un fallback seguro
 if [ -z "$HASS_IP" ] || [ "$HASS_IP" = "null" ]; then
-    echo "Aviso: No se pudo detectar la IP por API, usando nombres locales por defecto."
-    HASS_IP="homeassistant.local"
-else
-    echo "IP de Home Assistant detectada con éxito: ${HASS_IP}"
+    HASS_IP="192.168.42.138" # Fallback seguro
 fi
+echo "IP de Home Assistant detectada: ${HASS_IP}"
 
 # Inyección en go2rtc
-echo "Configurando stream '${NOMBRE_DISPOSITIVO}' hacia la IP: ${INTERCOM_IP}..."
 sed -i "s/REPLACE_WITH_STREAM_NAME/${NOMBRE_DISPOSITIVO}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE DINÁMICO (Solución Definitiva de handshake para IP)
+# 2. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Evita el bug de OCSP de Caddy)
 # ==============================================================================
-echo "Generando Caddyfile dinámico..."
+# Instalamos openssl de forma rápida si la imagen base no lo tuviera
+if ! command -v openssl &> /dev/null; then
+    echo "Instalando dependencia OpenSSL..."
+    apk add --no-cache openssl
+fi
+
+CERT_FILE="/config/islautopia/certs/islautopia.crt"
+KEY_FILE="/config/islautopia/certs/islautopia.key"
+
+echo "Generando certificado SSL con SAN para la IP: ${HASS_IP}..."
+
+# Generamos el certificado inyectando la IP en el bloque SAN de forma obligatoria
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+  -keyout "$KEY_FILE" -out "$CERT_FILE" \
+  -subj "/CN=${HASS_IP}" \
+  -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
+
+# ==============================================================================
+# 3. GENERAR EL CADDYFILE PLANO (A prueba de balas para Alpine)
+# ==============================================================================
+echo "Generando Caddyfile..."
 
 cat << EOF > /etc/Caddyfile
 {
@@ -52,27 +67,21 @@ cat << EOF > /etc/Caddyfile
     auto_https disable_redirects
 }
 
-https://${HASS_IP}:8443, https://localhost:8443 {
-    # Forzamos la CA interna con directivas estrictas de handshake local
-    tls internal {
-        on_demand
-        lifetime 720h
-    }
+:8443 {
+    # Le pasamos los archivos generados externamente por OpenSSL
+    # Esto hace que Caddy no intente gestionar PKI ni OCSP
+    tls ${CERT_FILE} ${KEY_FILE}
 
-    # Parche de nivel de servidor para ignorar errores de negociación en IPs
-    @pki_error {
-        expression {tls_cipher} == ""
-    }
-
-    # 1. Endpoint directo para la descarga del archivo físico
+    # 1. Endpoint directo para descargar el certificado
     handle /root.crt {
-        root * /config/islautopia/caddy/pki/authorities/local/
-        header Content-Disposition "attachment; filename=root.crt"
+        root * /config/islautopia/certs/
+        header Content-Disposition "attachment; filename=islautopia.crt"
         header Content-Type "application/x-x509-ca-cert"
+        rewrite * /islautopia.crt
         file_server
     }
 
-    # 2. RUTA EXCLUSIVA PARA EL SOPORTE: Explicación y descarga
+    # 2. RUTA EXCLUSIVA PARA EL SOPORTE
     handle /cert {
         header Content-Type "text/html; charset=utf-8"
         respond <<HTML
@@ -81,10 +90,10 @@ https://${HASS_IP}:8443, https://localhost:8443 {
     <body style="font-family: system-ui, sans-serif; text-align: center; padding: 50px; background: #f4f6f9;">
         <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h1>Instalación de Certificado</h1>
-            <p>El certificado raíz se ha generado correctamente para la IP ${HASS_IP}.</p>
+            <p>El certificado seguro se ha generado para la IP ${HASS_IP}.</p>
             <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
                 <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                    📥 Descargar root.crt
+                    📥 Descargar Certificado (islautopia.crt)
                 </a>
             </div>
             <a href="/" style="color: #007bff; text-decoration: none;">Ir a Home Assistant →</a>
@@ -107,10 +116,10 @@ HTML
 EOF
 
 # ==============================================================================
-# 3. ARRANCAR MOTORES
+# 4. ARRANCAR MOTORES
 # ==============================================================================
 echo "Iniciando motor de vídeo WebRTC (go2rtc)..."
 /usr/local/bin/go2rtc -config /etc/go2rtc.yaml &
 
-echo "Iniciando pasarela HTTPS..."
+echo "Iniciando pasarela HTTPS limpia..."
 caddy run --config /etc/Caddyfile --adapter caddyfile
