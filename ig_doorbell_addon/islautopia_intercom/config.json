@@ -7,7 +7,7 @@
   "startup": "application",
   "boot": "auto",
   "stdin": true,
-  "interactive": true
+  "interactive": true,
   "ports": {
     "8443/tcp": 8443,
     "1984/tcp": null, 
