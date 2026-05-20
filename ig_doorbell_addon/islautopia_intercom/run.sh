@@ -57,7 +57,7 @@ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
   -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
 
 # ==============================================================================
-# 3. GENERAR EL CADDYFILE PLANO (A prueba de balas para Alpine)
+# 3. GENERAR EL CADDYFILE PLANO (Proxies corregidos para POST y WS)
 # ==============================================================================
 echo "Generando Caddyfile..."
 
@@ -68,8 +68,7 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
-    # Le pasamos los archivos generados externamente por OpenSSL
-    # Esto hace que Caddy no intente gestionar PKI ni OCSP
+    # Le pasamos los archivos generados por OpenSSL
     tls ${CERT_FILE} ${KEY_FILE}
 
     # 1. Endpoint directo para descargar el certificado
@@ -103,10 +102,11 @@ cat << EOF > /etc/Caddyfile
 HTML
     }
 
-    # 3. Proxies para el ecosistema WebRTC de go2rtc
-    reverse_proxy /api/ws* 127.0.0.1:1984
-    reverse_proxy /api/webrtc* 127.0.0.1:1984
-    reverse_proxy /api/streams* 127.0.0.1:1984
+    # 3. PARCHE CRÍTICO: Redirección universal de la API de go2rtc (Sintaxis correcta)
+    # Cualquier petición a /api/ws, /api/webrtc o /api/streams irá de cabeza a go2rtc
+    handle /api/* {
+        reverse_proxy 127.0.0.1:1984
+    }
 
     # 4. LA RAÍZ VA A HASS
     handle {
