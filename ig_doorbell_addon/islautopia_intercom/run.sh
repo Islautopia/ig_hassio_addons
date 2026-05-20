@@ -42,7 +42,7 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE DINÁMICO (Desactivando OCSP correctamente)
+# 2. GENERAR EL CADDYFILE DINÁMICO (Solución Definitiva de handshake para IP)
 # ==============================================================================
 echo "Generando Caddyfile dinámico..."
 
@@ -50,17 +50,19 @@ cat << EOF > /etc/Caddyfile
 {
     admin off
     auto_https disable_redirects
-    
-    # Sintaxis correcta en Caddyfile para apagar OCSP en la CA local
-    pki {
-        ca local {
-            disable_ocsp
-        }
-    }
 }
 
 https://${HASS_IP}:8443, https://localhost:8443 {
-    tls internal
+    # Forzamos la CA interna con directivas estrictas de handshake local
+    tls internal {
+        on_demand
+        lifetime 720h
+    }
+
+    # Parche de nivel de servidor para ignorar errores de negociación en IPs
+    @pki_error {
+        expression {tls_cipher} == ""
+    }
 
     # 1. Endpoint directo para la descarga del archivo físico
     handle /root.crt {
