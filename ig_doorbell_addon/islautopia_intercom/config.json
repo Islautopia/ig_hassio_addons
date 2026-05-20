@@ -1,6 +1,6 @@
 {
   "name": "Islautopia Intercom & SSL Gateway",
-  "version": "1.4.27",
+  "version": "1.4.28",
   "slug": "islautopia_intercom",
   "description": "Motor WebRTC y pasarela HTTPS local autónoma con certificado autofirmado para tu videoportero.",
   "arch": ["aarch64", "amd64", "armv7"],
