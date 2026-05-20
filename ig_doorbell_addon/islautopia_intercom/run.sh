@@ -42,7 +42,7 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE DINÁMICO (Parche definitivo OCSP para IP)
+# 2. GENERAR EL CADDYFILE DINÁMICO (Desactivando OCSP correctamente)
 # ==============================================================================
 echo "Generando Caddyfile dinámico..."
 
@@ -50,8 +50,13 @@ cat << EOF > /etc/Caddyfile
 {
     admin off
     auto_https disable_redirects
-    # CRÍTICO: Evita que Caddy intente buscar firmas de revocación en la LAN
-    no_ocsp
+    
+    # Sintaxis correcta en Caddyfile para apagar OCSP en la CA local
+    pki {
+        ca local {
+            disable_ocsp
+        }
+    }
 }
 
 https://${HASS_IP}:8443, https://localhost:8443 {
