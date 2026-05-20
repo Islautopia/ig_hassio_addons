@@ -36,7 +36,8 @@ echo "Generando Caddyfile con Autoridad de Certificación Interna..."
 cat << EOF > /etc/Caddyfile
 {
     admin off
-    default_sni homeassistant.local
+    # Deshabilitamos la gestión automática de puertos
+    auto_https off
 }
 
 :8443 {
