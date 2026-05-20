@@ -41,30 +41,11 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
-    # Forzamos TLS y evitamos que Caddy intente buscar el puerto 80
-    tls internal
-
-    # Ruta de descarga del certificado
-    handle /root.crt {
-        root * /config/islautopia/caddy/pki/authorities/local/
-        file_server
-    }
-
-    # Landing page simple
-    handle / {
-        respond "Motor Islautopia funcionando."
-    }
-
-    # Proxies
-    @go2rtc {
-        path /api/ws* /api/webrtc* /api/streams*
-    }
-    handle @go2rtc {
-        reverse_proxy 127.0.0.1:1984
-    }
+    # Cambiamos internal por self_signed
+    tls self_signed
     
-    handle {
-        reverse_proxy homeassistant:8123
+    handle / {
+        respond "Si esto carga, el SSL funciona"
     }
 }
 EOF
