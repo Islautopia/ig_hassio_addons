@@ -29,14 +29,13 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE (Con Landing Page y parche de red Alpine)
+# 2. GENERAR EL CADDYFILE (Diferenciando HASS de la descarga del Certificado)
 # ==============================================================================
-echo "Generando Caddyfile optimizado con persistencia..."
+echo "Generando Caddyfile optimizado con redirecciones correctas..."
 
 cat << EOF > /etc/Caddyfile
 {
     admin off
-    # Parche crítico para evitar el error de protocolo en Alpine
     auto_https disable_redirects
 }
 
@@ -45,40 +44,41 @@ cat << EOF > /etc/Caddyfile
         on_demand
     }
 
-    # 1. Endpoint para descargar el certificado directamente
+    # 1. Endpoint directo para la descarga del archivo físico
     handle /root.crt {
         root * /config/islautopia/caddy/pki/authorities/local/
         file_server
     }
 
-    # 2. Página de bienvenida elegante para el usuario final
-    handle / {
-        respond \`
-        <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Islautopia Intercom Gateway</title>
-            </head>
-            <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f6f9; color: #333;">
-                <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <h1 style="color: #1a1a1a; margin-bottom: 10px;">Islautopia Intercom</h1>
-                    <p style="color: #666; margin-bottom: 30px;">La pasarela HTTPS local está funcionando correctamente.</p>
-                    
-                    <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
-                        <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,123,255,0.2);">
-                            📥 Descargar Certificado Raíz (root.crt)
-                        </a>
-                        <p style="margin-top: 15px; font-size: 0.9em; color: #555; line-height: 1.5; text-align: left;">
-                            <b>Instrucciones rápidas:</b><br>
-                            • <b>Windows/PC:</b> Doble clic al archivo → Instalar → Equipo local → Colocar en "Entidades de certificación raíz de confianza".<br>
-                            • <b>Móvil:</b> Ajustes → Seguridad → Instalar desde almacenamiento → Certificado de CA.
-                        </p>
-                    </div>
-                    <small style="color: #999;">Islautopia Garage &copy; 2026</small>
-                </div>
-            </body>
-        </html>
-        \`
+    # 2. RUTA EXCLUSIVA PARA EL SOPORTE: Explicación y descarga
+    handle /cert {
+        header Content-Type "text/html; charset=utf-8"
+        respond <<HTML
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Islautopia Intercom Gateway</title>
+    </head>
+    <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f6f9; color: #333;">
+        <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h1 style="color: #1a1a1a; margin-bottom: 10px;">Instalación de Certificado</h1>
+            <p style="color: #666; margin-bottom: 30px;">Descarga e instala el certificado raíz para habilitar el audio bidireccional seguro.</p>
+            
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+                <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,123,255,0.2);">
+                    📥 Descargar Certificado Raíz (root.crt)
+                </a>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #555; line-height: 1.5; text-align: left;">
+                    <b>Instrucciones rápidas:</b><br>
+                    • <b>Windows/PC:</b> Doble clic al archivo → Instalar → Equipo local → Colocar en "Entidades de certificación raíz de confianza".<br>
+                    • <b>Móvil:</b> Ajustes → Seguridad → Instalar desde almacenamiento → Certificado de CA.
+                </p>
+            </div>
+            <a href="/" style="color: #007bff; text-decoration: none; font-size: 0.95em;">Ir a Home Assistant →</a>
+        </div>
+    </body>
+</html>
+HTML
     }
 
     # 3. Proxies para el ecosistema WebRTC de go2rtc
@@ -86,8 +86,8 @@ cat << EOF > /etc/Caddyfile
     reverse_proxy /api/webrtc* 127.0.0.1:1984
     reverse_proxy /api/streams* 127.0.0.1:1984
 
-    # 4. Proxy por defecto hacia Home Assistant (para cuando ya tengan el certificado)
-    handle_path /hass* {
+    # 4. LA RAÍZ VA A HASS: Todo lo que no sea /cert o /root.crt va directo a Home Assistant
+    handle {
         reverse_proxy homeassistant:8123
     }
 }
