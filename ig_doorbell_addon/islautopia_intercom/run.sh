@@ -37,9 +37,8 @@ sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Evita el bug de OCSP de Caddy)
+# 2. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Persistente y controlado)
 # ==============================================================================
-# Instalamos openssl de forma rápida si la imagen base no lo tuviera
 if ! command -v openssl &> /dev/null; then
     echo "Instalando dependencia OpenSSL..."
     apk add --no-cache openssl
@@ -48,13 +47,16 @@ fi
 CERT_FILE="/config/islautopia/certs/islautopia.crt"
 KEY_FILE="/config/islautopia/certs/islautopia.key"
 
-echo "Generando certificado SSL con SAN para la IP: ${HASS_IP}..."
-
-# Generamos el certificado inyectando la IP en el bloque SAN de forma obligatoria
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-  -keyout "$KEY_FILE" -out "$CERT_FILE" \
-  -subj "/CN=${HASS_IP}" \
-  -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
+# 🧠 VERIFICACIÓN INTELIGENTE: Solo generamos si no existen los archivos
+if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
+    echo "No se encontró un certificado previo. Generando certificado SSL nuevo con SAN para la IP: ${HASS_IP}..."
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+      -keyout "$KEY_FILE" -out "$CERT_FILE" \
+      -subj "/CN=${HASS_IP}" \
+      -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
+else
+    echo "Certificado SSL existente detectado en /config/islautopia/certs/. Saltando generación para mantener la confianza de Windows."
+fi
 
 # ==============================================================================
 # 3. GENERAR EL CADDYFILE PLANO (Proxies corregidos para POST y WS)
