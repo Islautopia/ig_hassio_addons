@@ -3,9 +3,8 @@
 echo "Iniciando Islautopia Intercom Engine (Modo Local CA)..."
 
 # ==============================================================================
-# 1. PREPARACIÓN DE DIRECTORIOS Y VARIABLES (Persistencia en /config)
+# 1. PREPARACIÓN DE DIRECTORIOS Y DETECCIÓN DE IPS
 # ==============================================================================
-# Forzamos a Caddy a guardar sus datos en la carpeta compartida con Home Assistant
 export XDG_DATA_HOME="/config/islautopia"
 export XDG_CONFIG_HOME="/config/islautopia"
 mkdir -p /config/islautopia
@@ -23,15 +22,29 @@ fi
 
 [ -z "$NOMBRE_DISPOSITIVO" ] || [ "$NOMBRE_DISPOSITIVO" = "null" ] && NOMBRE_DISPOSITIVO="videoportero"
 
+# 🔍 DETECCIÓN DINÁMICA DE LA IP DE HOME ASSISTANT
+# Consultamos a la API del Supervisor usando el token nativo del contenedor
+echo "Detectando IP local de Home Assistant..."
+HASS_IP=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq --raw-output '.data.interfaces[] | select(.primary==true) | .ipv4.address[0]' | cut -d'/' -f1)
+
+# Si por algún motivo falla la API, ponemos un fallback seguro
+if [ -z "$HASS_IP" ] || [ "$HASS_IP" = "null" ]; then
+    echo "Aviso: No se pudo detectar la IP por API, usando nombres locales por defecto."
+    HASS_IP="homeassistant.local"
+else
+    echo "IP de Home Assistant detectada con éxito: ${HASS_IP}"
+fi
+
+# Inyección en go2rtc
 echo "Configurando stream '${NOMBRE_DISPOSITIVO}' hacia la IP: ${INTERCOM_IP}..."
 sed -i "s/REPLACE_WITH_STREAM_NAME/${NOMBRE_DISPOSITIVO}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
 sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
 
 # ==============================================================================
-# 2. GENERAR EL CADDYFILE (Diferenciando HASS de la descarga del Certificado)
+# 2. GENERAR EL CADDYFILE DINÁMICO (Con la IP real de HASS en el SAN)
 # ==============================================================================
-echo "Generando Caddyfile optimizado con redirecciones correctas..."
+echo "Generando Caddyfile dinámico para ${HASS_IP}..."
 
 cat << EOF > /etc/Caddyfile
 {
@@ -39,7 +52,8 @@ cat << EOF > /etc/Caddyfile
     auto_https disable_redirects
 }
 
-:8443 {
+# Usamos la IP dinámica detectada y los nombres estándar de HA
+${HASS_IP}:8443, homeassistant.local:8443, localhost:8443 {
     tls internal {
         on_demand
     }
@@ -47,11 +61,8 @@ cat << EOF > /etc/Caddyfile
     # 1. Endpoint directo para la descarga del archivo físico
     handle /root.crt {
         root * /config/islautopia/caddy/pki/authorities/local/
-        
-        # Forzamos al navegador a descargarlo en lugar de mostrarlo
         header Content-Disposition "attachment; filename=root.crt"
         header Content-Type "application/x-x509-ca-cert"
-        
         file_server
     }
 
@@ -67,16 +78,13 @@ cat << EOF > /etc/Caddyfile
     <body style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f6f9; color: #333;">
         <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h1 style="color: #1a1a1a; margin-bottom: 10px;">Instalación de Certificado</h1>
-            <p style="color: #666; margin-bottom: 30px;">Descarga e instala el certificado raíz para habilitar el audio bidireccional seguro.</p>
-            
+            <p style="color: #666; margin-bottom: 30px;">El certificado raíz se ha actualizado para la IP ${HASS_IP}.</p>
             <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
-                <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,123,255,0.2);">
-                    📥 Descargar Certificado Raíz (root.crt)
+                <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                    📥 Descargar NUEVO root.crt
                 </a>
-                <p style="margin-top: 15px; font-size: 0.9em; color: #555; line-height: 1.5; text-align: left;">
-                    <b>Instrucciones rápidas:</b><br>
-                    • <b>Windows/PC:</b> Doble clic al archivo → Instalar → Equipo local → Colocar en "Entidades de certificación raíz de confianza".<br>
-                    • <b>Móvil:</b> Ajustes → Seguridad → Instalar desde almacenamiento → Certificado de CA.
+                <p style="margin-top: 15px; font-size: 0.85em; color: #d9534f; line-height: 1.4; text-align: left;">
+                    ⚠️ <b>Nota importante:</b> Al cambiar la configuración a IP dinámica, debes volver a descargar este archivo e instalarlo para que Chrome valide el nuevo dominio numérico.
                 </p>
             </div>
             <a href="/" style="color: #007bff; text-decoration: none; font-size: 0.95em;">Ir a Home Assistant →</a>
@@ -91,7 +99,7 @@ HTML
     reverse_proxy /api/webrtc* 127.0.0.1:1984
     reverse_proxy /api/streams* 127.0.0.1:1984
 
-    # 4. LA RAÍZ VA A HASS: Todo lo que no sea /cert o /root.crt va directo a Home Assistant
+    # 4. LA RAÍZ VA A HASS
     handle {
         reverse_proxy homeassistant:8123
     }
