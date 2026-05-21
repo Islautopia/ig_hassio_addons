@@ -40,13 +40,15 @@ echo "Compilando lista de candidatos de red locales..."
 # Iniciamos el bloque con la IP que nos da el supervisor
 CANDIDATES_BLOCK="    - ${HASS_IP}:${PUERTO_WEBRTC}"
 
-# Forzamos la escucha en la interfaz global (0.0.0.0) para que el socket UDP
-# responda a través de cualquier vlan o pasarela inter-vlan (como tu puente .41.x -> .42.x)
+# Forzamos la escucha en la interfaz global (0.0.0.0) para saltar el inter-vlan
 CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - 0.0.0.0:${PUERTO_WEBRTC}"
 
-# Rastreamos cualquier otra IP local real del sistema (alias de red o Docker)
-for ip in $(hostname -I); do
-    if [ "$ip" != "$HASS_IP" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+# 🧠 SOLUCIÓN COMPATIBLE CON BUSYBOX (Alpine): Extraemos todas las IPs locales válidas
+ALL_IPS=$(ip -4 addr show | awk '/inet / {print $2}' | cut -d'/' -f1)
+
+for ip in $ALL_IPS; do
+    # Evitamos duplicar la IP principal y filtramos el localhost (127.0.0.1)
+    if [ "$ip" != "$HASS_IP" ] && [ "$ip" != "127.0.0.1" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - ${ip}:${PUERTO_WEBRTC}"
     fi
 done
