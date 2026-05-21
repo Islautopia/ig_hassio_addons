@@ -6,7 +6,7 @@ This repository hosts professional-grade, privacy-first, and high-performance lo
 
 ## 📦 Available Add-ons
 
-### [Islautopia Intercom Engine](./ig_doorbell_addon/islautopia_intercom)
+### [Islautopia Intercom Engine](./islautopia_intercom)
 The definitive WebRTC and autonomous local HTTPS/SSL gateway for RTSP-based video doorbells. 
 It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. 
 
