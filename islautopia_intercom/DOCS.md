@@ -10,7 +10,7 @@ The **Islautopia Intercom Engine** is a specialized, SSL-hardened gateway design
 
 Modern web browsers aggressively block microphone access if they detect an "insecure" connection. This Add-on solves this by providing an automated local SSL proxy and its own integrated `go2rtc` instance. It ensures a secure context for your video streams so you can enjoy full 2-way audio functionality—all 100% locally, with zero cloud dependencies or complex network routing.
 
-> **Note:** While this Add-on and its companion *Islautopia Intercom Card* are fully open-source and compatible with any standard RTSP protocol, they have been engineered as the foundational software layer for the **upcoming Islautopia Garage Video Intercom line**—the first hardware designed specifically for seamless Home Assistant integration. Stay tuned for the official launch announcement!
+> **Note:** While this Add-on and its companion **[Islautopia Intercom Card](https://github.com/Islautopia/islautopia-intercom-card)** are fully open-source and compatible with any standard RTSP protocol, they have been engineered as the foundational software layer for the **upcoming Islautopia Garage Video Intercom line**—the first hardware designed specifically for seamless Home Assistant integration. Stay tuned for the official launch announcement!
 
 ## 🎯 Is this Add-on for you?
 To save you time, here is exactly who this is built for, and who might not need it:
@@ -24,7 +24,7 @@ To save you time, here is exactly who this is built for, and who might not need 
 * **Built-in Support Portal:** Features a dedicated `/cert` endpoint providing a 1-click download portal to easily install the trusted certificate on your mobile devices and tablets.
 * **Collision-Free Architecture:** Configured by default to run on isolated ports (API on 1985, WebRTC on 8565) to prevent conflicts with other existing Add-ons like Frigate.
 * **Embedded WebRTC Engine:** Includes a standalone, optimized `go2rtc` instance to handle RTSP-to-WebRTC conversion with zero-latency streaming.
-* **Plug & Play Integration:** Designed to pair perfectly with the *Islautopia Intercom Card* for HACS.
+* **Plug & Play Integration:** Designed to pair perfectly with the **[Islautopia Intercom Card](https://github.com/Islautopia/islautopia-intercom-card)** for HACS.
 
 ## 📥 Installation & Setup
 
