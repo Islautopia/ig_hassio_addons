@@ -23,7 +23,7 @@ if [ -z "$INTERCOM_IP" ] || [ "$INTERCOM_IP" = "null" ]; then
 fi
 
 [ -z "$WEBRTC_PORT" ] || [ "$WEBRTC_PORT" = "null" ] && WEBRTC_PORT="8565"
-[ -z "$DEVICE_NAME" ] || [ "$DEVICE_NAME" = "null" ] && DEVICE_NAME="doorbell"
+[ -z "$DEVICE_NAME" ] || [ "$DEVICE_NAME" = "null" ] && DEVICE_NAME="videoportero"
 [ -z "$GO2RTC_PORT" ] || [ "$GO2RTC_PORT" = "null" ] && GO2RTC_PORT="1985"
 
 # DYNAMIC HA IP DETECTION
@@ -161,10 +161,33 @@ HTML
 EOF
 
 # ==============================================================================
-# 5. LAUNCH
+# 5. LAUNCH & DASHBOARD LOGS
 # ==============================================================================
 echo "Starting WebRTC video engine (go2rtc)..."
 /usr/local/bin/go2rtc -config /etc/go2rtc.yaml &
+
+# Brief pause to ensure endpoints are bound before printing dashboard
+sleep 2
+
+echo ""
+echo "=================================================================="
+echo " 🎉 Islautopia Intercom Engine is successfully running!"
+echo "=================================================================="
+echo " 🔐 Secure Home Assistant Access URL:"
+echo "    👉 https://${HASS_IP}:8443"
+echo ""
+echo " 🎥 Integrated go2rtc WebUI/API URL:"
+echo "    👉 http://${HASS_IP}:${GO2RTC_PORT}"
+echo ""
+echo " ℹ️  CRITICAL STEP FOR 2-WAY AUDIO (Microphone Access):"
+echo "    Modern web browsers block microphone permissions on untrusted links."
+echo "    To enable 2-way audio on EACH device (phone, tablet, or PC):"
+echo "    1. Open your browser and navigate to: https://${HASS_IP}:8443/cert"
+echo "    2. Click the download button to get 'islautopia.crt'."
+echo "    3. Open the downloaded file and install/import it into your"
+echo "       device's 'Trusted Root Certification Authorities' store."
+echo "=================================================================="
+echo ""
 
 echo "Starting clean HTTPS gateway..."
 caddy run --config /etc/Caddyfile --adapter caddyfile

@@ -1,6 +1,6 @@
 {
   "name": "Islautopia Intercom Engine",
-  "version": "1.4.50",
+  "version": "1.4.51",
   "slug": "islautopia_intercom",
   "description": "Secure local WebRTC gateway with SSL/TLS for RTSP-based 2-way audio intercoms.",
   "arch": ["aarch64", "amd64", "armv7"],
