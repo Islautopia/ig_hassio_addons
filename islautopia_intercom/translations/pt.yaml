@@ -7,7 +7,7 @@ configuration:
     description: "A porta para o tráfego de vídeo WebRTC. Padrão: 8565."
   device_name:
     name: "Nome do Dispositivo"
-    description: "Identificador único para o seu stream de vídeo (ex: videoportero)."
+    description: "Identificador único para o seu stream de vídeo (ex: doorbell)."
   go2rtc_api_port:
     name: "Porta API go2rtc"
     description: "Porta para a API interna do motor go2rtc. Padrão: 1985."

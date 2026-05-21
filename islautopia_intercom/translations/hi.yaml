@@ -7,7 +7,7 @@ configuration:
     description: "WebRTC वीडियो ट्रैफ़िक के लिए पोर्ट। डिफ़ॉल्ट: 8565।"
   device_name:
     name: "डिवाइस का नाम"
-    description: "आपके वीडियो स्ट्रीम के लिए विशिष्ट पहचानकर्ता (उदा: videoportero)।"
+    description: "आपके वीडियो स्ट्रीम के लिए विशिष्ट पहचानकर्ता (उदा: doorbell)।"
   go2rtc_api_port:
     name: "go2rtc API पोर्ट"
     description: "आंतरिक go2rtc इंजन API के लिए पोर्ट। डिफ़ॉल्ट: 1985।"

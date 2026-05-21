@@ -7,7 +7,7 @@ configuration:
     description: "La porta per il traffico video WebRTC. Predefinito: 8565."
   device_name:
     name: "Nome del dispositivo"
-    description: "Identificatore univoco per il tuo streaming video (es. videoportero)."
+    description: "Identificatore univoco per il tuo streaming video (es. doorbell)."
   go2rtc_api_port:
     name: "Porta API go2rtc"
     description: "Porta per l'API interna del motore go2rtc. Predefinito: 1985."

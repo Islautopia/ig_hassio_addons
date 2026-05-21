@@ -7,7 +7,7 @@ configuration:
     description: "Порт для видеотрафика WebRTC. По умолчанию: 8565."
   device_name:
     name: "Имя устройства"
-    description: "Уникальный идентификатор вашего видеопотока (например, videoportero)."
+    description: "Уникальный идентификатор вашего видеопотока (например, doorbell)."
   go2rtc_api_port:
     name: "API порт go2rtc"
     description: "Порт для внутреннего API движка go2rtc. По умолчанию: 1985."

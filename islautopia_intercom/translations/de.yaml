@@ -7,7 +7,7 @@ configuration:
     description: "Der Port für den WebRTC-Videostream-Verkehr. Standard: 8565."
   device_name:
     name: "Gerätename"
-    description: "Eindeutige Kennung für deinen Videostream (z. B. videoportero)."
+    description: "Eindeutige Kennung für deinen Videostream (z. B. doorbell)."
   go2rtc_api_port:
     name: "go2rtc API-Port"
     description: "Port für die interne API des go2rtc-Engines. Standard: 1985."

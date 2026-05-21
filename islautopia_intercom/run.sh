@@ -23,7 +23,7 @@ if [ -z "$INTERCOM_IP" ] || [ "$INTERCOM_IP" = "null" ]; then
 fi
 
 [ -z "$WEBRTC_PORT" ] || [ "$WEBRTC_PORT" = "null" ] && WEBRTC_PORT="8565"
-[ -z "$DEVICE_NAME" ] || [ "$DEVICE_NAME" = "null" ] && DEVICE_NAME="videoportero"
+[ -z "$DEVICE_NAME" ] || [ "$DEVICE_NAME" = "null" ] && DEVICE_NAME="doorbell"
 [ -z "$GO2RTC_PORT" ] || [ "$GO2RTC_PORT" = "null" ] && GO2RTC_PORT="1985"
 
 # DYNAMIC HA IP DETECTION

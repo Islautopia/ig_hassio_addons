@@ -7,7 +7,7 @@ configuration:
     description: "المنفذ لحركة مرور فيديو WebRTC. الافتراضي: 8565."
   device_name:
     name: "اسم الجهاز"
-    description: "معرف فريد لبث الفيديو الخاص بك (مثال: videoportero)."
+    description: "معرف فريد لبث الفيديو الخاص بك (مثال: doorbell)."
   go2rtc_api_port:
     name: "منفذ واجهة برمجة تطبيقات go2rtc"
     description: "المنفذ لواجهة برمجة التطبيقات الداخلية لمحرك go2rtc. الافتراضي: 1985."
