@@ -1,31 +1,31 @@
-# Islautopia Garage Add-ons
+# Islautopia Garage Home Assistant Add-ons
 
-Bienvenido al repositorio oficial de complementos (Add-ons) de **Islautopia Garage** para Home Assistant. 
+Welcome to the official **Islautopia Garage** add-on repository for Home Assistant.
 
-Este repositorio aloja herramientas de ingeniería y pasarelas de nivel profesional, diseñadas específicamente para maximizar la privacidad, la seguridad y el rendimiento local de tu ecosistema domótico, sin depender de la nube.
+This repository hosts professional-grade, privacy-first, and high-performance local gateways. Our software is engineered to maximize local reliability and security without relying on third-party cloud subscriptions.
 
-## 📦 Add-ons Disponibles
+## 📦 Available Add-ons
 
 ### [Islautopia Intercom Engine](./islautopia_intercom)
-El motor WebRTC y pasarela HTTPS local definitiva para videoporteros basados en RTSP. 
-Resuelve los bloqueos de seguridad del micrófono en los navegadores modernos proporcionando un proxy SSL automático y una instancia `go2rtc` integrada. Es la pieza fundacional y el compañero indispensable para la *Islautopia Intercom Card*.
+The definitive WebRTC and autonomous local HTTPS/SSL gateway for RTSP-based video doorbells. 
+It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. This engine serves as the essential foundational layer and companion for the *Islautopia Intercom Card*.
 
-*(Próximamente se irán añadiendo nuevas herramientas para el ecosistema Islautopia).*
+*(More advanced tools for the Islautopia Garage ecosystem will be added over time).*
 
-## ⚙️ Cómo instalar este repositorio en Home Assistant
+## ⚙️ Installation Guide
 
-Para poder instalar nuestros Add-ons, primero debes añadir este repositorio a tu Home Assistant:
+To install any of our add-ons, you need to add this custom repository to your Home Assistant instance:
 
-1. Ve a tu panel de Home Assistant y navega a **Ajustes > Complementos**.
-2. Haz clic en el botón inferior derecho **"Tienda de complementos"**.
-3. Haz clic en los **tres puntos verticales** arriba a la derecha y selecciona **Repositorios**.
-4. Pega la siguiente URL y haz clic en **Añadir**:
+1. In Home Assistant, navigate to **Settings > Add-ons**.
+2. Click the **Add-on Store** button in the bottom-right corner.
+3. Click the **three vertical dots** in the top-right corner and select **Repositories**.
+4. Copy and paste the following URL, then click **Add**:
    `https://github.com/Islautopia/ig_hassio_addons`
-5. Cierra la ventana emergente.
-6. Vuelve a hacer clic en los tres puntos superiores y selecciona **Recargar**.
+5. Close the popup window.
+6. Click the three vertical dots again and select **Check for updates** (or Reload).
 
-¡Listo! Al desplazarte hacia abajo en la tienda, verás una nueva sección llamada **"Islautopia Add-ons"** con todas nuestras herramientas listas para instalar con un solo clic.
+Scroll down to the bottom of the Add-on Store page, and you will find the new **"Islautopia Add-ons"** section with our gateway ready to be installed with a single click.
 
-## 📞 Soporte y Contacto
-Desarrollado y mantenido por Iñaki para Islautopia Garage.
-Para dudas técnicas, integraciones o consultas generales, puedes contactarnos en: [garage@islautopia.com](mailto:garage@islautopia.com)
+## 📞 Support & Partnership
+Developed and maintained for the Islautopia Garage ecosystem.
+For technical questions, integrations, or general inquiries, please contact us at: [garage@islautopia.com](mailto:garage@islautopia.com)
