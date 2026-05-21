@@ -8,7 +8,9 @@ This repository hosts professional-grade, privacy-first, and high-performance lo
 
 ### [Islautopia Intercom Engine](./islautopia_intercom)
 The definitive WebRTC and autonomous local HTTPS/SSL gateway for RTSP-based video doorbells. 
-It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. This engine serves as the essential foundational layer and companion for the *Islautopia Intercom Card*.
+It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. 
+
+> 🚀 **Perfect Companion:** This engine is designed to work flawlessly with the **[Islautopia Intercom Card](https://github.com/Islautopia/islautopia-intercom-card)**. We highly recommend installing the custom card via HACS for the ultimate, zero-latency 2-way audio dashboard experience.
 
 *(More advanced tools for the Islautopia Garage ecosystem will be added over time).*
 
