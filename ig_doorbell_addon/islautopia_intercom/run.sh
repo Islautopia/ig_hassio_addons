@@ -1,9 +1,9 @@
 #!/bin/bash
 
-echo "Iniciando Islautopia Intercom Engine (Modo Local SSL)..."
+echo "Starting Islautopia Intercom Engine (Local SSL Mode)..."
 
 # ==============================================================================
-# 1. PREPARACIÓN DE DIRECTORIOS Y CONFIGURACIÓN
+# 1. DIRECTORY PREPARATION & CONFIGURATION
 # ==============================================================================
 export XDG_DATA_HOME="/config/islautopia"
 export XDG_CONFIG_HOME="/config/islautopia"
@@ -11,93 +11,96 @@ mkdir -p /config/islautopia/certs
 
 CONFIG_PATH="/data/options.json"
 
+# Extract parameters using the new English keys
 INTERCOM_IP=$(jq --raw-output '.intercom_ip' $CONFIG_PATH)
-PUERTO_WEBRTC=$(jq --raw-output '.puerto_webrtc' $CONFIG_PATH)
-NOMBRE_DISPOSITIVO=$(jq --raw-output '.nombre_dispositivo' $CONFIG_PATH)
+WEBRTC_PORT=$(jq --raw-output '.webrtc_port' $CONFIG_PATH)
+DEVICE_NAME=$(jq --raw-output '.device_name' $CONFIG_PATH)
+GO2RTC_PORT=$(jq --raw-output '.go2rtc_api_port' $CONFIG_PATH)
 
 if [ -z "$INTERCOM_IP" ] || [ "$INTERCOM_IP" = "null" ]; then
-    echo "ERROR FATAL: La IP local del videoportero no está configurada."
+    echo "FATAL ERROR: Intercom local IP is not configured."
     exit 1
 fi
 
-[ -z "$PUERTO_WEBRTC" ] || [ "$PUERTO_WEBRTC" = "null" ] && PUERTO_WEBRTC="8565"
-[ -z "$NOMBRE_DISPOSITIVO" ] || [ "$NOMBRE_DISPOSITIVO" = "null" ] && NOMBRE_DISPOSITIVO="videoportero"
+[ -z "$WEBRTC_PORT" ] || [ "$WEBRTC_PORT" = "null" ] && WEBRTC_PORT="8565"
+[ -z "$DEVICE_NAME" ] || [ "$DEVICE_NAME" = "null" ] && DEVICE_NAME="videoportero"
+[ -z "$GO2RTC_PORT" ] || [ "$GO2RTC_PORT" = "null" ] && GO2RTC_PORT="1985"
 
-# DETECCIÓN DINÁMICA DE LA IP DE HASS
-echo "Detectando IP local de Home Assistant..."
+# DYNAMIC HA IP DETECTION
+echo "Detecting Home Assistant local IP..."
 HASS_IP=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq --raw-output '.data.interfaces[] | select(.primary==true) | .ipv4.address[0]' | cut -d'/' -f1)
 
 if [ -z "$HASS_IP" ] || [ "$HASS_IP" = "null" ]; then
-    HASS_IP="192.168.42.138" # Fallback seguro
+    HASS_IP="192.168.42.138" # Safe fallback
 fi
-echo "IP principal de Home Assistant detectada: ${HASS_IP}"
+echo "Main Home Assistant IP detected: ${HASS_IP}"
 
 # ==============================================================================
-# 2. OPTIMIZACIÓN WEBRTC: GENERACIÓN DINÁMICA DE CANDIDATES (Caja Negra)
+# 2. WEBRTC OPTIMIZATION: DYNAMIC CANDIDATE GENERATION
 # ==============================================================================
-echo "Compilando lista de candidatos de red locales..."
+echo "Compiling local network candidates list..."
 
-# Iniciamos el bloque con la IP que nos da el supervisor
-CANDIDATES_BLOCK="    - ${HASS_IP}:${PUERTO_WEBRTC}"
+# Start with the supervisor IP
+CANDIDATES_BLOCK="    - ${HASS_IP}:${WEBRTC_PORT}"
 
-# Forzamos la escucha en la interfaz global (0.0.0.0) para saltar el inter-vlan
-CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - 0.0.0.0:${PUERTO_WEBRTC}"
+# Force listening on global interface (0.0.0.0) to bypass inter-vlan issues
+CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - 0.0.0.0:${WEBRTC_PORT}"
 
-# 🧠 SOLUCIÓN COMPATIBLE CON BUSYBOX (Alpine): Extraemos todas las IPs locales válidas
+# BUSYBOX COMPATIBLE: Extract all valid local IPs
 ALL_IPS=$(ip -4 addr show | awk '/inet / {print $2}' | cut -d'/' -f1)
 
 for ip in $ALL_IPS; do
-    # Evitamos duplicar la IP principal y filtramos el localhost (127.0.0.1)
+    # Avoid duplicating main IP and filter localhost
     if [ "$ip" != "$HASS_IP" ] && [ "$ip" != "127.0.0.1" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - ${ip}:${PUERTO_WEBRTC}"
+        CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - ${ip}:${WEBRTC_PORT}"
     fi
 done
 
-echo "Generando configuración /etc/go2rtc.yaml..."
+echo "Generating /etc/go2rtc.yaml configuration..."
 cat << EOF > /etc/go2rtc.yaml
 api:
   origin: "*"
-  listen: ":1984"
+  listen: ":${GO2RTC_PORT}"
 
 rtsp:
   listen: ":8554"
 
 webrtc:
-  listen: ":${PUERTO_WEBRTC}"
+  listen: ":${WEBRTC_PORT}"
   candidates:
 $(echo -e "$CANDIDATES_BLOCK")
     - stun:stun.l.google.com:19302
 
 streams:
-  ${NOMBRE_DISPOSITIVO}: rtsp://${INTERCOM_IP}:554/stream
+  ${DEVICE_NAME}: rtsp://${INTERCOM_IP}:554/stream
 EOF
 
 # ==============================================================================
-# 3. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Persistente y controlado)
+# 3. OPENSSL CERTIFICATE GENERATION (Persistent & Controlled)
 # ==============================================================================
 if ! command -v openssl &> /dev/null; then
-    echo "Instalando dependencia OpenSSL..."
+    echo "Installing OpenSSL dependency..."
     apk add --no-cache openssl
 fi
 
 CERT_FILE="/config/islautopia/certs/islautopia.crt"
 KEY_FILE="/config/islautopia/certs/islautopia.key"
 
-# VERIFICACIÓN INTELIGENTE: Mantiene el candado verde en Windows sin machacar claves
+# SMART CHECK: Keeps green padlock on Windows without overwriting keys
 if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
-    echo "No se encontró un certificado previo. Generando certificado SSL nuevo..."
+    echo "No previous certificate found. Generating new SSL certificate..."
     openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
       -keyout "$KEY_FILE" -out "$CERT_FILE" \
       -subj "/CN=${HASS_IP}" \
       -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
 else
-    echo "Certificado SSL existente detectado. Saltando generación para mantener la confianza de Windows."
+    echo "Existing SSL certificate detected. Skipping generation to maintain Windows trust."
 fi
 
 # ==============================================================================
-# 4. GENERAR EL CADDYFILE PLANO (Aislamiento de API estricto y WebSockets)
+# 4. FLAT CADDYFILE GENERATION (Strict API isolation and WebSockets)
 # ==============================================================================
-echo "Generando Caddyfile..."
+echo "Generating Caddyfile..."
 
 cat << EOF > /etc/Caddyfile
 {
@@ -108,7 +111,7 @@ cat << EOF > /etc/Caddyfile
 :8443 {
     tls ${CERT_FILE} ${KEY_FILE}
 
-    # 1. Descarga del certificado
+    # 1. Certificate download endpoint
     handle /root.crt {
         root * /config/islautopia/certs/
         header Content-Disposition "attachment; filename=islautopia.crt"
@@ -117,7 +120,7 @@ cat << EOF > /etc/Caddyfile
         file_server
     }
 
-    # 2. Portal de soporte local
+    # 2. Local support portal
     handle /cert {
         header Content-Type "text/html; charset=utf-8"
         respond <<HTML
@@ -125,32 +128,32 @@ cat << EOF > /etc/Caddyfile
     <head><meta charset="UTF-8"><title>Islautopia Intercom Gateway</title></head>
     <body style="font-family: system-ui, sans-serif; text-align: center; padding: 50px; background: #f4f6f9;">
         <div style="max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <h1>Instalación de Certificado</h1>
-            <p>El certificado seguro se ha generado para la IP ${HASS_IP}.</p>
+            <h1>Certificate Installation</h1>
+            <p>The secure certificate has been generated for IP ${HASS_IP}.</p>
             <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
                 <a href="/root.crt" style="display: inline-block; padding: 14px 28px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                    📥 Descargar Certificado (islautopia.crt)
+                    📥 Download Certificate (islautopia.crt)
                 </a>
             </div>
-            <a href="/" style="color: #007bff; text-decoration: none;">Ir a Home Assistant →</a>
+            <a href="/" style="color: #007bff; text-decoration: none;">Go to Home Assistant →</a>
         </div>
     </body>
 </html>
 HTML
     }
 
-    # 3. Filtros exclusivos go2rtc para evitar colisiones con el WebSocket de HA
+    # 3. Exclusive go2rtc filters to avoid collisions with HA WebSocket
     handle /api/webrtc* {
-        reverse_proxy 127.0.0.1:1984
+        reverse_proxy 127.0.0.1:${GO2RTC_PORT}
     }
     handle /api/ws* {
-        reverse_proxy 127.0.0.1:1984 {
+        reverse_proxy 127.0.0.1:${GO2RTC_PORT} {
             header_up Upgrade {header.Upgrade}
             header_up Connection {header.Connection}
         }
     }
 
-    # 4. Proxy transparente hacia el Core de Home Assistant
+    # 4. Transparent proxy to Home Assistant Core
     handle {
         reverse_proxy homeassistant:8123
     }
@@ -158,10 +161,10 @@ HTML
 EOF
 
 # ==============================================================================
-# 5. LANZAMIENTO
+# 5. LAUNCH
 # ==============================================================================
-echo "Iniciando motor de vídeo WebRTC (go2rtc)..."
+echo "Starting WebRTC video engine (go2rtc)..."
 /usr/local/bin/go2rtc -config /etc/go2rtc.yaml &
 
-echo "Iniciando pasarela HTTPS limpia..."
+echo "Starting clean HTTPS gateway..."
 caddy run --config /etc/Caddyfile --adapter caddyfile

@@ -1,24 +1,13 @@
 configuration:
   intercom_ip:
-    name: "1. IP Local del Videoportero"
-    description: "La dirección IP de tu ESP32-P4 en tu red local (ejemplo: 192.168.1.150)."
-  puerto_webrtc:
-    name: "2. Puerto WebRTC (Avanzado)"
-    description: "El puerto para el tráfico de vídeo. Por defecto es 8565 para evitar choques con Add-ons como Frigate."
-  modo_operacion:
-    name: "3. Modo de Operación"
-    description: "Elige 'DuckDNS Auto' para una configuración sin esfuerzo, o 'Certificados Locales' si ya tienes tu propio proxy inverso configurado."
-  duckdns_dominio:
-    name: "4. Tu Dominio DuckDNS (Solo para modo Auto)"
-    description: >-
-      Ve a duckdns.org, crea un subdominio y pégalo aquí completo (ejemplo: micampo.duckdns.org).
-  duckdns_token:
-    name: "5. Tu Token DuckDNS (Solo para modo Auto)"
-    description: >-
-      Copia el 'Token' de seguridad que aparece arriba en la web de DuckDNS y pégalo aquí.
-  ruta_certificado:
-    name: "Ruta del Certificado Local (Solo usuarios avanzados)"
-    description: "Ruta a tu fullchain.pem si usas Certificados Locales (ejemplo: /ssl/fullchain.pem)."
-  ruta_clave:
-    name: "Ruta de la Clave Privada (Solo usuarios avanzados)"
-    description: "Ruta a tu privkey.pem si usas Certificados Locales (ejemplo: /ssl/privkey.pem)."
+    name: "IP Local del Videoportero"
+    description: "La dirección IP de tu dispositivo RTSP en tu red local (ejemplo: 192.168.1.150)."
+  webrtc_port:
+    name: "Puerto WebRTC"
+    description: "El puerto para el tráfico de vídeo WebRTC. Por defecto: 8565."
+  device_name:
+    name: "Nombre del Dispositivo"
+    description: "Identificador único para tu streaming de vídeo (ejemplo: videoportero)."
+  go2rtc_api_port:
+    name: "Puerto API go2rtc"
+    description: "Puerto para la API interna del motor go2rtc. Por defecto: 1985."

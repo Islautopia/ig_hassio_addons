@@ -1,8 +1,8 @@
 {
-  "name": "Islautopia Intercom & SSL Gateway",
-  "version": "1.4.47",
+  "name": "Islautopia Intercom Engine",
+  "version": "1.4.48",
   "slug": "islautopia_intercom",
-  "description": "Motor WebRTC y pasarela HTTPS local autónoma con certificado autofirmado para tu videoportero.",
+  "description": "Secure local WebRTC gateway with SSL/TLS for RTSP-based 2-way audio intercoms.",
   "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
   "boot": "auto",
@@ -11,25 +11,27 @@
   "hassio_api": true,  
   "ports": {
     "8443/tcp": 8443,
-    "1984/tcp": null, 
+    "1985/tcp": 1985,
     "8565/tcp": 8565,
     "8565/udp": 8565
   },
   "ports_description": {
-    "8443/tcp": "Pasarela HTTPS segura local (Acceso LAN seguro para audio bidireccional)",
-    "1984/tcp": "Interfaz de go2rtc (Déjalo vacío para evitar choques con Frigate)",
-    "8565/tcp": "Señalización WebRTC TCP (Modificado para evitar a Frigate)",
-    "8565/udp": "Tráfico de vídeo WebRTC UDP"
+    "8443/tcp": "Secure HTTPS Gateway",
+    "1985/tcp": "Internal go2rtc API Port",
+    "8565/tcp": "WebRTC TCP Signaling",
+    "8565/udp": "WebRTC UDP Video Traffic"
   },
   "options": {
-    "nombre_dispositivo": "videoportero",
+    "device_name": "videoportero",
     "intercom_ip": "192.168.1.100",
-    "puerto_webrtc": 8565
+    "webrtc_port": 8565,
+    "go2rtc_api_port": 1985
   },
   "schema": {
-    "nombre_dispositivo": "str",
+    "device_name": "str",
     "intercom_ip": "str",
-    "puerto_webrtc": "int"
+    "webrtc_port": "int",
+    "go2rtc_api_port": "int"
   },
   "map": [
     "config:rw"

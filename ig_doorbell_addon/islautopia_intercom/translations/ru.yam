@@ -1,0 +1,13 @@
+configuration:
+  intercom_ip:
+    name: "Локальный IP домофона"
+    description: "IP-адрес вашего RTSP-устройства в локальной сети (например, 192.168.1.150)."
+  webrtc_port:
+    name: "Порт WebRTC"
+    description: "Порт для видеотрафика WebRTC. По умолчанию: 8565."
+  device_name:
+    name: "Имя устройства"
+    description: "Уникальный идентификатор вашего видеопотока (например, videoportero)."
+  go2rtc_api_port:
+    name: "API порт go2rtc"
+    description: "Порт для внутреннего API движка go2rtc. По умолчанию: 1985."

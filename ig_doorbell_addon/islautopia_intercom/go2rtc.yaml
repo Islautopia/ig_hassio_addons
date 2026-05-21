@@ -6,10 +6,9 @@ rtsp:
 
 webrtc:
   listen: ":REPLACE_WITH_WEBRTC_PORT"
-  # Le decimos a go2rtc que anuncie la IP real local para la conexión UDP
   candidates:
     - REPLACE_WITH_INTERCOM_IP:REPLACE_WITH_WEBRTC_PORT
     - stun:8555
   
 streams:
-  REPLACE_WITH_STREAM_NAME: rtsp://REPLACE_WITH_INTERCOM_IP:554/stream#audio=opus
+  REPLACE_WITH_STREAM_NAME: rtsp://REPLACE_WITH_INTERCOM_IP:554/stream

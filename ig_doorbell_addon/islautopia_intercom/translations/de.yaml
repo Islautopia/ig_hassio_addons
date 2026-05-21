@@ -1,0 +1,13 @@
+configuration:
+  intercom_ip:
+    name: "Lokale IP-Adresse der Sprechanlage"
+    description: "Die IP-Adresse deines RTSP-Geräts im lokalen Netzwerk (z. B. 192.168.1.150)."
+  webrtc_port:
+    name: "WebRTC-Port"
+    description: "Der Port für den WebRTC-Videostream-Verkehr. Standard: 8565."
+  device_name:
+    name: "Gerätename"
+    description: "Eindeutige Kennung für deinen Videostream (z. B. videoportero)."
+  go2rtc_api_port:
+    name: "go2rtc API-Port"
+    description: "Port für die interne API des go2rtc-Engines. Standard: 1985."

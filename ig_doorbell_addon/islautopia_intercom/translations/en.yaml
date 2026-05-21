@@ -1,24 +1,13 @@
 configuration:
   intercom_ip:
-    name: "1. Local Intercom IP"
-    description: "The IP address of your ESP32-P4 on your local network (e.g., 192.168.1.150)."
-  puerto_webrtc:
-    name: "2. WebRTC Port (Advanced)"
-    description: "The port for video traffic. Default is 8565 to avoid conflicts with Add-ons like Frigate."
-  modo_operacion:
-    name: "3. Operation Mode"
-    description: "Choose 'DuckDNS Auto' for an effortless setup, or 'Certificados Locales' (Local Certificates) if you already have your own reverse proxy."
-  duckdns_dominio:
-    name: "4. Your DuckDNS Domain (Auto mode only)"
-    description: >-
-      Go to duckdns.org, create a subdomain, and paste it here completely (e.g., myhome.duckdns.org).
-  duckdns_token:
-    name: "5. Your DuckDNS Token (Auto mode only)"
-    description: >-
-      Copy the security 'Token' displayed at the top of the DuckDNS website and paste it here.
-  ruta_certificado:
-    name: "Local Certificate Path (Advanced users only)"
-    description: "Path to your fullchain.pem if using Local Certificates (e.g., /ssl/fullchain.pem)."
-  ruta_clave:
-    name: "Private Key Path (Advanced users only)"
-    description: "Path to your privkey.pem if using Local Certificates (e.g., /ssl/privkey.pem)."
+    name: "Local Intercom IP"
+    description: "The IP address of your RTSP device on your local network (e.g., 192.168.1.150)."
+  webrtc_port:
+    name: "WebRTC Port"
+    description: "The port for WebRTC video traffic. Default: 8565."
+  device_name:
+    name: "Device Name"
+    description: "Unique identifier for your video stream (e.g., videoportero)."
+  go2rtc_api_port:
+    name: "go2rtc API Port"
+    description: "Port for the internal go2rtc API. Default: 1985."

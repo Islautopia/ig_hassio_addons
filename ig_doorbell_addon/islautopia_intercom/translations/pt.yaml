@@ -1,0 +1,13 @@
+configuration:
+  intercom_ip:
+    name: "IP Local do Videoporteiro"
+    description: "O endereço IP do seu dispositivo RTSP na rede local (ex: 192.168.1.150)."
+  webrtc_port:
+    name: "Porta WebRTC"
+    description: "A porta para o tráfego de vídeo WebRTC. Padrão: 8565."
+  device_name:
+    name: "Nome do Dispositivo"
+    description: "Identificador único para o seu stream de vídeo (ex: videoportero)."
+  go2rtc_api_port:
+    name: "Porta API go2rtc"
+    description: "Porta para a API interna do motor go2rtc. Padrão: 1985."

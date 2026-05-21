@@ -1,0 +1,13 @@
+configuration:
+  intercom_ip:
+    name: "IP المحلي للاتصال الداخلي"
+    description: "عنوان IP لجهاز RTSP الخاص بك على شبكتك المحلية (مثال: 192.168.1.150)."
+  webrtc_port:
+    name: "منفذ WebRTC"
+    description: "المنفذ لحركة مرور فيديو WebRTC. الافتراضي: 8565."
+  device_name:
+    name: "اسم الجهاز"
+    description: "معرف فريد لبث الفيديو الخاص بك (مثال: videoportero)."
+  go2rtc_api_port:
+    name: "منفذ واجهة برمجة تطبيقات go2rtc"
+    description: "المنفذ لواجهة برمجة التطبيقات الداخلية لمحرك go2rtc. الافتراضي: 1985."

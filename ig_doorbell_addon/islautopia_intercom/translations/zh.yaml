@@ -1,0 +1,13 @@
+configuration:
+  intercom_ip:
+    name: "对讲机局域网 IP"
+    description: "本地网络中 RTSP 设备的 IP 地址（例：192.168.1.150）。"
+  webrtc_port:
+    name: "WebRTC 端口"
+    description: "WebRTC 视频流量的端口。默认：8565。"
+  device_name:
+    name: "设备名称"
+    description: "视频流的唯一标识符（例：videoportero）。"
+  go2rtc_api_port:
+    name: "go2rtc API 端口"
+    description: "内部 go2rtc 引擎 API 的端口。默认：1985。"
