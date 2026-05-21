@@ -56,6 +56,7 @@ done
 echo "Generando configuración /etc/go2rtc.yaml..."
 cat << EOF > /etc/go2rtc.yaml
 api:
+  origin: "*"
   listen: ":1984"
 
 rtsp:
@@ -65,6 +66,7 @@ webrtc:
   listen: ":${PUERTO_WEBRTC}"
   candidates:
 $(echo -e "$CANDIDATES_BLOCK")
+    - stun:stun.l.google.com:19302
 
 streams:
   ${NOMBRE_DISPOSITIVO}: rtsp://${INTERCOM_IP}:554/stream
@@ -93,7 +95,7 @@ else
 fi
 
 # ==============================================================================
-# 4. GENERAR EL CADDYFILE PLANO (Aislamiento de API estricto)
+# 4. GENERAR EL CADDYFILE PLANO (Aislamiento de API estricto y WebSockets)
 # ==============================================================================
 echo "Generando Caddyfile..."
 
@@ -142,7 +144,10 @@ HTML
         reverse_proxy 127.0.0.1:1984
     }
     handle /api/ws* {
-        reverse_proxy 127.0.0.1:1984
+        reverse_proxy 127.0.0.1:1984 {
+            header_up Upgrade {header.Upgrade}
+            header_up Connection {header.Connection}
+        }
     }
 
     # 4. Proxy transparente hacia el Core de Home Assistant
