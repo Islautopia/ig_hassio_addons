@@ -3,7 +3,7 @@
 echo "Iniciando Islautopia Intercom Engine (Modo Local SSL)..."
 
 # ==============================================================================
-# 1. PREPARACIÓN DE DIRECTORIOS Y DETECCIÓN DE IPS
+# 1. PREPARACIÓN DE DIRECTORIOS Y CONFIGURACIÓN
 # ==============================================================================
 export XDG_DATA_HOME="/config/islautopia"
 export XDG_CONFIG_HOME="/config/islautopia"
@@ -20,24 +20,56 @@ if [ -z "$INTERCOM_IP" ] || [ "$INTERCOM_IP" = "null" ]; then
     exit 1
 fi
 
+[ -z "$PUERTO_WEBRTC" ] || [ "$PUERTO_WEBRTC" = "null" ] && PUERTO_WEBRTC="8565"
 [ -z "$NOMBRE_DISPOSITIVO" ] || [ "$NOMBRE_DISPOSITIVO" = "null" ] && NOMBRE_DISPOSITIVO="videoportero"
 
-# DETECCIÓN DE LA IP DE HASS
+# DETECCIÓN DINÁMICA DE LA IP DE HASS
 echo "Detectando IP local de Home Assistant..."
 HASS_IP=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq --raw-output '.data.interfaces[] | select(.primary==true) | .ipv4.address[0]' | cut -d'/' -f1)
 
 if [ -z "$HASS_IP" ] || [ "$HASS_IP" = "null" ]; then
     HASS_IP="192.168.42.138" # Fallback seguro
 fi
-echo "IP de Home Assistant detectada: ${HASS_IP}"
-
-# Inyección en go2rtc
-sed -i "s/REPLACE_WITH_STREAM_NAME/${NOMBRE_DISPOSITIVO}/g" /etc/go2rtc.yaml
-sed -i "s/REPLACE_WITH_INTERCOM_IP/${INTERCOM_IP}/g" /etc/go2rtc.yaml
-sed -i "s/REPLACE_WITH_WEBRTC_PORT/${PUERTO_WEBRTC}/g" /etc/go2rtc.yaml
+echo "IP principal de Home Assistant detectada: ${HASS_IP}"
 
 # ==============================================================================
-# 2. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Persistente y controlado)
+# 2. OPTIMIZACIÓN WEBRTC: GENERACIÓN DINÁMICA DE CANDIDATES (Caja Negra)
+# ==============================================================================
+echo "Compilando lista de candidatos de red locales..."
+
+# Iniciamos el bloque con la IP que nos da el supervisor
+CANDIDATES_BLOCK="    - ${HASS_IP}:${PUERTO_WEBRTC}"
+
+# Forzamos la escucha en la interfaz global (0.0.0.0) para que el socket UDP
+# responda a través de cualquier vlan o pasarela inter-vlan (como tu puente .41.x -> .42.x)
+CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - 0.0.0.0:${PUERTO_WEBRTC}"
+
+# Rastreamos cualquier otra IP local real del sistema (alias de red o Docker)
+for ip in $(hostname -I); do
+    if [ "$ip" != "$HASS_IP" ] && [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        CANDIDATES_BLOCK="${CANDIDATES_BLOCK}\n    - ${ip}:${PUERTO_WEBRTC}"
+    fi
+done
+
+echo "Generando configuración /etc/go2rtc.yaml..."
+cat << EOF > /etc/go2rtc.yaml
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+
+webrtc:
+  listen: ":${PUERTO_WEBRTC}"
+  candidates:
+$(echo -e "$CANDIDATES_BLOCK")
+
+streams:
+  ${NOMBRE_DISPOSITIVO}: rtsp://${INTERCOM_IP}:554/stream
+EOF
+
+# ==============================================================================
+# 3. GENERACIÓN DEL CERTIFICADO CON OPENSSL (Persistente y controlado)
 # ==============================================================================
 if ! command -v openssl &> /dev/null; then
     echo "Instalando dependencia OpenSSL..."
@@ -47,19 +79,19 @@ fi
 CERT_FILE="/config/islautopia/certs/islautopia.crt"
 KEY_FILE="/config/islautopia/certs/islautopia.key"
 
-# 🧠 VERIFICACIÓN INTELIGENTE: Solo generamos si no existen los archivos
+# VERIFICACIÓN INTELIGENTE: Mantiene el candado verde en Windows sin machacar claves
 if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
-    echo "No se encontró un certificado previo. Generando certificado SSL nuevo con SAN para la IP: ${HASS_IP}..."
+    echo "No se encontró un certificado previo. Generando certificado SSL nuevo..."
     openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
       -keyout "$KEY_FILE" -out "$CERT_FILE" \
       -subj "/CN=${HASS_IP}" \
       -addext "subjectAltName = IP:${HASS_IP},DNS:homeassistant.local,DNS:localhost" 2>/dev/null
 else
-    echo "Certificado SSL existente detectado en /config/islautopia/certs/. Saltando generación para mantener la confianza de Windows."
+    echo "Certificado SSL existente detectado. Saltando generación para mantener la confianza de Windows."
 fi
 
 # ==============================================================================
-# 3. GENERAR EL CADDYFILE PLANO (Rutas de API discriminadas)
+# 4. GENERAR EL CADDYFILE PLANO (Aislamiento de API estricto)
 # ==============================================================================
 echo "Generando Caddyfile..."
 
@@ -70,10 +102,9 @@ cat << EOF > /etc/Caddyfile
 }
 
 :8443 {
-    # Archivos planos de OpenSSL
     tls ${CERT_FILE} ${KEY_FILE}
 
-    # 1. Endpoint directo para descargar el certificado
+    # 1. Descarga del certificado
     handle /root.crt {
         root * /config/islautopia/certs/
         header Content-Disposition "attachment; filename=islautopia.crt"
@@ -82,7 +113,7 @@ cat << EOF > /etc/Caddyfile
         file_server
     }
 
-    # 2. RUTA EXCLUSIVA PARA EL SOPORTE
+    # 2. Portal de soporte local
     handle /cert {
         header Content-Type "text/html; charset=utf-8"
         respond <<HTML
@@ -104,7 +135,7 @@ cat << EOF > /etc/Caddyfile
 HTML
     }
 
-    # 3. EXCLUSIVO GO2RTC: Solo capturamos lo que usa nuestra tarjeta intercom
+    # 3. Filtros exclusivos go2rtc para evitar colisiones con el WebSocket de HA
     handle /api/webrtc* {
         reverse_proxy 127.0.0.1:1984
     }
@@ -112,7 +143,7 @@ HTML
         reverse_proxy 127.0.0.1:1984
     }
 
-    # 4. TODO LO DEMÁS (Incluyendo el /api/websocket de HASS) va al núcleo de HA
+    # 4. Proxy transparente hacia el Core de Home Assistant
     handle {
         reverse_proxy homeassistant:8123
     }
@@ -120,7 +151,7 @@ HTML
 EOF
 
 # ==============================================================================
-# 4. ARRANCAR MOTORES
+# 5. LANZAMIENTO
 # ==============================================================================
 echo "Iniciando motor de vídeo WebRTC (go2rtc)..."
 /usr/local/bin/go2rtc -config /etc/go2rtc.yaml &
