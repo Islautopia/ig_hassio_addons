@@ -26,29 +26,32 @@ To save you time, here is exactly who this is built for, and who might not need 
 * **Embedded WebRTC Engine:** Includes a standalone, optimized `go2rtc` instance to handle RTSP-to-WebRTC conversion with zero-latency streaming.
 * **Plug & Play Integration:** Designed to pair perfectly with the **[Islautopia Intercom Card](https://github.com/Islautopia/islautopia-intercom-card)** for HACS.
 
+
 ## 📥 Installation & Setup
 
-1. **Add Repository:**
+1. **Add Repository & Install:**
    - In Home Assistant, navigate to **Settings > Add-ons**.
    - Click the **three dots** in the top-right corner and select **Repositories**.
-   - Paste the URL adress of this repository ( https://github.com/Islautopia/ig_hassio_addons ) and click **Add**.
+   - Paste the URL address of this repository (`https://github.com/Islautopia/ig_hassio_addons`) and click **Add**.
    - Search for **"Islautopia Intercom Engine"** in the Add-on Store and click **Install**.
 
-2. **Configure Network for HTTPS (Essential):**
-   - Go to **Settings > System > Local Network**.
+2. **Configure & Start Add-on:**
+   - Go to the **Configuration** tab of the Add-on.
+   - Enter a unique identifier for your stream in the `device_name` field (e.g., `videoportero`).
+   - Set your `intercom_ip`, `webrtc_port`, and `go2rtc_api_port`.
+   - *Tip: If you don't know your intercom's IP, check your router's "Connected Devices" list or use a network scanner app (like Fing).*
+   - Click **Start** and check the **Log** tab. The gateway will print a green success dashboard showing your secure access URL (e.g., `https://<YOUR_HASS_IP>:8443`).
+   - *Crucial: This is the exact address you must enter in your browser or configure as the **"Internal URL" (Local Access) in your Home Assistant Companion App** to ensure 2-way audio permissions.*
+
+3. **Configure Network for HTTPS (Essential):**
+   - Go to **Settings > System > Local Network** in Home Assistant.
    - Enter `https://<YOUR_HASS_IP>:8443` in the Server URL field.
    - Uncheck the **"Automatic"** option to force this manual configuration.
    - Save and restart Home Assistant.
 
-3. **Configure & Start Add-on:**
-   - Go to the **Configuration** tab of the Add-on.
-   - Set your `intercom_ip`, `webrtc_port`, and `go2rtc_api_port`.
-   - *Tip: If you don't know your intercom's IP, check your router's "Connected Devices" list or use a network scanner app (like Fing).*
-   - Click **Start** and check the **Log** tab to ensure the gateway is listening.
-
 4. **Trust the Local Certificate (Final Step for 2-Way Audio):**
    - Open a browser on the device you want to use for 2-way audio (phone, tablet, PC).
-   - Navigate to `https://<YOUR_HASS_IP>:8443/cert`.
+   - Navigate to the new secure URL support portal: `https://<YOUR_HASS_IP>:8443/cert`.
    - Click the download button to get `islautopia.crt` and install it into your device's trusted root certificates.
 
 ## ⚙️ Configuration Parameters
