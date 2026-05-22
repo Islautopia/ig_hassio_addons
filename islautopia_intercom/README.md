@@ -57,7 +57,7 @@ To save you time, here is exactly who this is built for, and who might not need 
 ## ⚙️ Configuration Parameters
 * `intercom_ip`: The local IP address of your RTSP video doorbell.
 * `webrtc_port`: The WebRTC port for the stream (Default: 8565).
-* `device_name`: Unique identifier for your stream (e.g., `videoportero`).
+* `device_name`: Unique identifier for your stream (e.g., `doorbell`).
 * `go2rtc_api_port`: The port for the internal `go2rtc` API (Default: 1985).
 
 ## ❓ Troubleshooting
