@@ -37,7 +37,7 @@ To save you time, here is exactly who this is built for, and who might not need 
 
 2. **Configure & Start Add-on:**
    - Go to the **Configuration** tab of the Add-on.
-   - Enter a unique identifier for your stream in the `device_name` field (e.g., `videoportero`).
+   - Enter a unique identifier for your stream in the `device_name` field (e.g., `doorbell`).
    - Set your `intercom_ip`, `webrtc_port`, and `go2rtc_api_port`.
    - *Tip: If you don't know your intercom's IP, check your router's "Connected Devices" list or use a network scanner app (like Fing).*
    - Click **Start** and check the **Log** tab. The gateway will print a green success dashboard showing your secure access URL (e.g., `https://<YOUR_HASS_IP>:8443`).
