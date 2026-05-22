@@ -31,7 +31,7 @@ To save you time, here is exactly who this is built for, and who might not need 
 1. **Add Repository:**
    - In Home Assistant, navigate to **Settings > Add-ons**.
    - Click the **three dots** in the top-right corner and select **Repositories**.
-   - Paste your repository URL and click **Add**.
+   - Paste the URL adress of this repository ( https://github.com/Islautopia/ig_hassio_addons ) and click **Add**.
    - Search for **"Islautopia Intercom Engine"** in the Add-on Store and click **Install**.
 
 2. **Configure Network for HTTPS (Essential):**
