@@ -536,7 +536,7 @@ write_portal() {
     could have been tampered with on the way to you. Compare it against the copy printed in
     the app's own log:
     <br><br>
-    <strong>Settings &rarr; Add-ons &rarr; Islautopia HTTPS for Home Assistant &rarr; Log</strong>
+    <strong>Settings &rarr; Apps &rarr; Islautopia HTTPS for Home Assistant &rarr; Log</strong>
     <br><br>
     That log reaches you through Home Assistant's own secure, logged-in interface, so it is
     the copy to trust. If the two match, this file is genuine.
