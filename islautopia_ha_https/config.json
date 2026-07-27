@@ -1,8 +1,8 @@
 {
   "name": "Islautopia HTTPS for Home Assistant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "slug": "islautopia_ha_https",
-  "description": "Zero-configuration real HTTPS certificate for your whole Home Assistant instance - no domain, no DNS account, no port forwarding.",
+  "description": "Real HTTPS for your whole Home Assistant instance, with or without internet - no domain, no DNS account, no port forwarding.",
   "url": "https://github.com/Islautopia/ig_hassio_addons/tree/main/islautopia_ha_https",
   "arch": ["aarch64", "amd64", "armv7"],
   "startup": "application",
@@ -10,10 +10,12 @@
   "stdin": false,
   "hassio_api": true,
   "ports": {
-    "8443/tcp": 8443
+    "8443/tcp": 8443,
+    "8099/tcp": 8099
   },
   "ports_description": {
-    "8443/tcp": "Secure (real certificate) HTTPS access to Home Assistant"
+    "8443/tcp": "Secure HTTPS access to Home Assistant",
+    "8099/tcp": "Trust portal: downloads the certificate that keeps HTTPS working without internet (optional, plain HTTP by design)"
   },
   "options": {},
   "schema": {}
