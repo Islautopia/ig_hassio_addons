@@ -6,7 +6,21 @@ This repository hosts professional-grade, privacy-first, and high-performance lo
 
 ## 📦 Available Add-ons
 
+### [Islautopia HTTPS for Home Assistant](./islautopia_ha_https)
+Real, zero-configuration HTTPS certificate for your whole Home Assistant instance — no domain, no
+DNS account, no port forwarding. Solves the "browser blocks the microphone because HA itself
+isn't served over HTTPS" problem, which the certificate on the doorbell itself cannot fix (that
+cert only secures the connection *to the doorbell*, not the origin serving your HA dashboard).
+**Not a Nabu Casa alternative** — it gives no remote access at all, only real local HTTPS. See
+the add-on's own README for the full "Security and privacy" explanation before installing.
+
 ### [Islautopia Intercom Engine](./islautopia_intercom)
+⚠️ **If you own an Islautopia Doorbell (IG Doorbell hardware), install
+[`islautopia-doorbell-integration`](https://github.com/Islautopia/islautopia-doorbell-integration)
+instead** (HACS integration, zero YAML, native WebRTC/HTTPS/TURN, auto-dispatches "open door"
+MQTT messages). This add-on remains fully supported, unchanged, as a **generic RTSP/`go2rtc`
+gateway for third-party video intercoms** — see the add-on's own README for the full picture.
+
 The definitive WebRTC and autonomous local HTTPS/SSL gateway for RTSP-based video doorbells. 
 It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. 
 

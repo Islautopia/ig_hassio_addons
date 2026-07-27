@@ -5,6 +5,30 @@
 
 ---
 
+> ## ⚠️ If you own an Islautopia Doorbell (IG Doorbell hardware), read this first
+>
+> **This add-on is no longer the recommended way to connect an Islautopia Doorbell to Home
+> Assistant.** Islautopia Doorbell hardware now ships with **native WebRTC** (no RTSP relay
+> needed), a **real Let's Encrypt HTTPS certificate** issued to the device itself (no
+> self-signed cert / no manual trust step), and its **own TURN/STUN relay** for remote access
+> (no Google STUN, no port forwarding). All of that makes this add-on's job — RTSP→WebRTC
+> conversion via `go2rtc`, a self-signed cert via Caddy just to unlock microphone access,
+> STUN-only ICE — **redundant for that hardware specifically**.
+>
+> ➡️ **Use the new [`islautopia-doorbell-integration`](https://github.com/Islautopia/islautopia-doorbell-integration)** instead (a proper Home Assistant integration, installable via HACS,
+> zero YAML) together with the updated **[Islautopia Intercom
+> Card](https://github.com/Islautopia/islautopia-intercom-card)**. It also auto-dispatches the
+> doorbell's "open door" MQTT message to the right Home Assistant service — no manual
+> Automation required, which this add-on never handled either.
+>
+> **This add-on is not going away and keeps working exactly as before** — nothing breaks for
+> existing installs. Its remaining, still-fully-supported job is **generic RTSP/`go2rtc`
+> compatibility for third-party video intercoms that are not Islautopia hardware** (i.e. you
+> have some other RTSP intercom and just want the local-HTTPS-for-microphone trick this add-on
+> provides). If that's your case, carry on reading below — nothing here changes for you.
+
+---
+
 ## 📖 Overview
 The **Islautopia Intercom Engine** is a specialized, SSL-hardened gateway designed to bridge the gap between any **RTSP-based video intercom** and Home Assistant. 
 
