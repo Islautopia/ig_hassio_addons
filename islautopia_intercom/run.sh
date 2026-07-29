@@ -30,8 +30,24 @@ fi
 echo "Detecting Home Assistant local IP..."
 HASS_IP=$(curl -s -H "Authorization: Bearer $SUPERVISOR_TOKEN" http://supervisor/network/info | jq --raw-output '.data.interfaces[] | select(.primary==true) | .ipv4.address[0]' | cut -d'/' -f1)
 
+# If the Supervisor cannot tell us the address, fall back to whatever address this container
+# actually has, and say so out loud.
+#
+# This used to fall back to one specific hardcoded address. It was labelled "safe fallback" and it
+# was the opposite of safe: it was a developer's own Home Assistant address, which in anyone else's
+# network points either at nothing or -- worse -- at some unrelated device. A fallback that quietly
+# aims somewhere plausible but wrong is far harder to diagnose than one that fails loudly.
 if [ -z "$HASS_IP" ] || [ "$HASS_IP" = "null" ]; then
-    HASS_IP="192.168.42.138" # Safe fallback
+    HASS_IP=$(ip -4 addr show scope global | awk '/inet / {print $2}' | cut -d'/' -f1 | head -n1)
+    if [ -n "$HASS_IP" ]; then
+        echo "WARNING: could not ask the Supervisor for the Home Assistant address."
+        echo "         Falling back to this container's own address: ${HASS_IP}"
+        echo "         If WebRTC cannot connect, set the address by hand in the add-on options."
+    else
+        echo "FATAL ERROR: could not determine the Home Assistant address, and this container has"
+        echo "             no usable IPv4 address either. Cannot continue."
+        exit 1
+    fi
 fi
 echo "Main Home Assistant IP detected: ${HASS_IP}"
 
