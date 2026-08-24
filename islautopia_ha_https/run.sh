@@ -745,6 +745,33 @@ write_caddyfile() {
 	}
 }
 
+# El portal de confianza, servido tambien por HTTPS. Se importa desde LOS DOS sitios de :8443
+# -- el del hostname publico y el catch-all-- en vez de repetirlo, porque una defensa repartida
+# en dos sitios se cae en cuanto uno se queda atras.
+#
+# ⚠️ POR QUE IMPORTA QUE ESTE EN EL DEL HOSTNAME PUBLICO, que es donde faltaba: ese sitio lleva un
+# certificado de Let's Encrypt de verdad, asi que su enlace **lo abre cualquier navegador sin un
+# solo aviso**. El del puerto 8099 va en HTTP plano a proposito -- es el unico camino que funciona
+# sin internet-- y eso lo deja a merced de todo lo que un navegador moderno hace con un `http://`:
+# subirlo a https por su cuenta, recordar una redireccion vieja, servir la pagina de la cache. Le
+# paso a Inaki el 2026-08-24: tuvo que abrirlo de incognito. El add-on no manda ni HSTS ni
+# redireccion (medido con curl desde fuera: 200 en texto plano), asi que no era cosa nuestra --
+# pero teniendo un camino inmune, hay que ofrecerlo.
+(portal) {
+	handle /islautopia/ca.crt {
+		root * ${PORTAL_DIR}
+		rewrite * /ca.crt
+		header Content-Disposition "attachment; filename=islautopia-ha-ca.crt"
+		header Content-Type "application/x-x509-ca-cert"
+		file_server
+	}
+	handle /islautopia/trust {
+		root * ${PORTAL_DIR}
+		rewrite * /index.html
+		file_server
+	}
+}
+
 # Trust portal, plain HTTP. Serves the CA root and its instructions and nothing
 # else -- deliberately no proxy to Home Assistant on this port.
 :${PORTAL_PORT} {
@@ -767,6 +794,7 @@ EOF
 # Public hostname -> real Let's Encrypt certificate. Needs internet to resolve.
 ${HOSTNAME_PUBLIC}:${HTTPS_PORT} {
 	tls ${CERT_FILE} ${KEY_FILE}
+	import portal
 	import hass
 }
 EOF
@@ -778,18 +806,7 @@ EOF
 # homeassistant.local and localhost. Needs no internet.
 :${HTTPS_PORT} {
 	tls ${LEAF_CHAIN} ${LEAF_KEY}
-	handle /islautopia/ca.crt {
-		root * ${PORTAL_DIR}
-		rewrite * /ca.crt
-		header Content-Disposition "attachment; filename=islautopia-ha-ca.crt"
-		header Content-Type "application/x-x509-ca-cert"
-		file_server
-	}
-	handle /islautopia/trust {
-		root * ${PORTAL_DIR}
-		rewrite * /index.html
-		file_server
-	}
+	import portal
 	import hass
 }
 EOF
@@ -852,6 +869,12 @@ echo " allowed - each device installs one small file, once. Open this"
 echo " page on the device and follow it:"
 print_highlighted_url "http://${PRIMARY_IP}:${PORTAL_PORT}"
 echo ""
+echo " That one is plain HTTP on purpose: it is the only path that works"
+echo " with no internet at all. The price is that a modern browser may"
+echo " upgrade it to https by itself, or serve it from cache, and then it"
+echo " appears not to work. If that happens, use the trusted link printed"
+echo " further down, or open this one in a private window."
+echo ""
 echo " Certificate authority fingerprint (SHA-256). THIS log line is the"
 echo " authoritative copy: compare it against the one shown on that page"
 echo " before installing anything."
@@ -884,6 +907,11 @@ if have_public_cert; then
     echo " Assistant uses it automatically."
     echo " This hostname always resolves to your LOCAL IP - it does not"
     echo " expose Home Assistant outside your network."
+    echo ""
+    echo " And the trust page is served here too, over a certificate every"
+    echo " browser already trusts. Prefer THIS link over the plain-HTTP one"
+    echo " above whenever you have internet - see below."
+    print_highlighted_url "https://${HOSTNAME_PUBLIC}:${HTTPS_PORT}/islautopia/trust"
     echo "=================================================================="
     echo ""
 else

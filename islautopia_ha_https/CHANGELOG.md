@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.5.0
+
+Todo esto sale de instalarlo desde la tienda por primera vez, el 2026-08-24.
+
+### Anadido
+
+- **Un boton propio en la pagina del add-on** que abre la pagina de confianza. El log de un add-on
+  lo pinta Home Assistant como texto plano, asi que **sus URL no son enlaces y el add-on no puede
+  hacer que lo sean**. Un boton si.
+- **La pagina de confianza, tambien por el hostname publico** -- que lleva un certificado que todo
+  navegador ya se cree, asi que ese enlace se abre sin un solo aviso.
+- **Icono y logo.** No traia ninguno.
+
+### Corregido
+
+- **La pagina de confianza daba 404 por el hostname publico.** Sus dos rutas vivian solo en el
+  sitio del catch-all del 8443; el del hostname publico se limitaba a pasarle todo a Home
+  Assistant. Ahora las dos las importa un bloque compartido, en vez de repetirlas -- una defensa
+  en dos sitios se cae en cuanto uno se queda atras.
+
+### Por que importa lo del hostname
+
+La pagina del puerto 8099 va en **HTTP plano a proposito**: es el unico camino que funciona sin
+internet ninguno. El precio es que un navegador moderno puede subirla a `https` por su cuenta o
+servirla de la cache, y entonces **parece que no funciona** -- le paso a Inaki al instalarla, y
+tuvo que abrirla de incognito.
+
+**No es cosa del add-on**, y esta medido: desde fuera, el 8099 contesta `200` en texto plano, sin
+redireccion y sin HSTS. Lo que se hace es ofrecer un camino que no tiene ese problema, y decir en
+el log que existe.
+
 ## 0.4.0
 
 **Fixed: reinstalling the app used to throw away the two things it must never regenerate.** The
