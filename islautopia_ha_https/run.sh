@@ -689,12 +689,26 @@ write_portal() {
 </div>
 
 <div class="card">
-  <h2>Step 4 &mdash; check it worked</h2>
-  <p>On the device you just set up, open:</p>
-  <p><a class="btn" href="https://${PRIMARY_IP}:${HTTPS_PORT}/">https://${PRIMARY_IP}:${HTTPS_PORT}/</a></p>
-  <p>Home Assistant should load with no security warning at all. If your browser still
-  complains, the certificate isn't trusted yet &mdash; on iPhone or iPad that almost always
-  means part two above hasn't been done.</p>
+  <h2>Step 4 &mdash; check it worked, then tell Home Assistant</h2>
+  <p>Copy this address. You need it twice, and neither time is a link any use:</p>
+  <p>
+    <button class="btn" id="copiar" type="button"
+            data-url="https://${PRIMARY_IP}:${HTTPS_PORT}/">Copy the address</button>
+    <span id="copiado" class="muted" role="status" aria-live="polite"></span>
+  </p>
+  <p><code id="direccion">https://${PRIMARY_IP}:${HTTPS_PORT}/</code></p>
+  <ol>
+    <li><strong>Paste it into a new browser tab.</strong> Home Assistant should load with a
+        padlock and no security warning at all. If your browser still complains, the
+        certificate isn't trusted yet &mdash; on iPhone or iPad that almost always means part
+        two above hasn't been done.</li>
+    <li><strong>Once that works, paste it into Home Assistant itself</strong>, under
+        <strong>Settings &rarr; System &rarr; Network &rarr; Home Assistant URL</strong>. From
+        then on the rest of Home Assistant uses it by itself.</li>
+  </ol>
+  <p class="muted">There is no button that just opens it, on purpose: this page is served
+  inside Home Assistant, so a link here would open Home Assistant nested inside a panel of
+  itself. And the second step needs the address in a field, which no link can do.</p>
   <p class="muted">Use this numeric address rather than <code>homeassistant.local</code>.
   Names ending in <code>.local</code> are resolved by a neighbour-discovery mechanism that
   does not travel between networks, so if your phone and your Home Assistant sit on
@@ -705,6 +719,58 @@ write_portal() {
 
 <p class="muted" style="text-align:center">Islautopia Garage</p>
 </main>
+<script>
+(function () {
+  var b = document.getElementById('copiar');
+  var aviso = document.getElementById('copiado');
+  if (!b) { return; }
+
+  function decir(t) { aviso.textContent = t; }
+
+  b.addEventListener('click', function () {
+    var url = b.getAttribute('data-url');
+
+    // navigator.clipboard SOLO existe en un contexto seguro. Esta misma pagina se sirve por dos
+    // caminos -- dentro de Home Assistant (seguro) y en HTTP plano por el puerto 8099 (no lo es)
+    // -- asi que hay que tener el respaldo, y decirlo cuando ninguno de los dos funciona: un
+    // boton de copiar que no copia y se calla es peor que no tener boton.
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(
+        function () { decir('Copied.'); },
+        function () { viejo(url); }
+      );
+      return;
+    }
+    viejo(url);
+  });
+
+  function viejo(url) {
+    var t = document.createElement('textarea');
+    t.value = url;
+    t.setAttribute('readonly', '');
+    t.style.position = 'fixed';
+    t.style.opacity = '0';
+    document.body.appendChild(t);
+    t.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(t);
+    if (ok) {
+      decir('Copied.');
+    } else {
+      decir('Could not copy here - select the address below and copy it by hand.');
+      var d = document.getElementById('direccion');
+      if (d && window.getSelection) {
+        var r = document.createRange();
+        r.selectNodeContents(d);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+      }
+    }
+  }
+})();
+</script>
 </body>
 </html>
 EOF

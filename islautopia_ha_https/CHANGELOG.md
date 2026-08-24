@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.7.0
+
+### Fixed
+
+- **The last step opened Home Assistant inside Home Assistant.** Since 0.6.0 this page is served
+  through ingress, which means inside an iframe of Home Assistant itself - and its final step was a
+  link to the local HTTPS address, which is Home Assistant again. Following it nested one inside a
+  panel of the other. Found by using it, not by reading it.
+
+  It is no longer a link. It is a button that **copies the address**, and the page now says what to
+  do with it twice over: paste it into a new browser tab to check there is no warning, and then
+  paste it into Settings, System, Network, Home Assistant URL so the rest of Home Assistant uses it.
+
+  The second of those is why a link was never enough on its own: an address that has to go into a
+  field cannot be delivered by clicking.
+
+  ⚠️ The copy falls back and, if both ways fail, says so and selects the address for you. This page
+  is served two ways - through Home Assistant, which is a secure context, and over plain HTTP on
+  port 8099, which is not, and where the clipboard API does not exist at all. A copy button that
+  does not copy and stays quiet is worse than none: you paste something else believing you have it.
+
 ## 0.6.1
 
 ### Fixed
