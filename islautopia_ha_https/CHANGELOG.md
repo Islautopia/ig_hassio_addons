@@ -2,34 +2,34 @@
 
 ## 0.5.0
 
-Todo esto sale de instalarlo desde la tienda por primera vez, el 2026-08-24.
+All of this came out of installing it from the add-on store for the first time.
 
-### Anadido
+### Added
 
-- **Un boton propio en la pagina del add-on** que abre la pagina de confianza. El log de un add-on
-  lo pinta Home Assistant como texto plano, asi que **sus URL no son enlaces y el add-on no puede
-  hacer que lo sean**. Un boton si.
-- **La pagina de confianza, tambien por el hostname publico** -- que lleva un certificado que todo
-  navegador ya se cree, asi que ese enlace se abre sin un solo aviso.
-- **Icono y logo.** No traia ninguno.
+- **A button of its own** on the add-on's page, which opens the trust page. Home Assistant renders
+  an add-on log as plain text, so **the URLs in it are not links and an add-on cannot make them
+  be**. A button can.
+- **The trust page over the public hostname too** - which carries a certificate every browser
+  already trusts, so that link opens without a single warning.
+- **An icon and a logo.** It had neither.
 
-### Corregido
+### Fixed
 
-- **La pagina de confianza daba 404 por el hostname publico.** Sus dos rutas vivian solo en el
-  sitio del catch-all del 8443; el del hostname publico se limitaba a pasarle todo a Home
-  Assistant. Ahora las dos las importa un bloque compartido, en vez de repetirlas -- una defensa
-  en dos sitios se cae en cuanto uno se queda atras.
+- **The trust page returned 404 on the public hostname.** Its two routes lived only in the
+  catch-all site on port 8443; the public-hostname site simply handed everything to Home
+  Assistant. Both now come from one shared snippet imported by each, rather than being repeated -
+  a defence living in two places falls over as soon as one of them is left behind.
 
-### Por que importa lo del hostname
+### Why the hostname one matters
 
-La pagina del puerto 8099 va en **HTTP plano a proposito**: es el unico camino que funciona sin
-internet ninguno. El precio es que un navegador moderno puede subirla a `https` por su cuenta o
-servirla de la cache, y entonces **parece que no funciona** -- le paso a Inaki al instalarla, y
-tuvo que abrirla de incognito.
+The page on port 8099 is **plain HTTP on purpose**: it is the only path that works with no internet
+at all. The price is that a modern browser may upgrade it to `https` by itself, or serve it from
+cache, and then **it appears not to work** - which is exactly what happened on the first real
+install, and it took a private window to get through.
 
-**No es cosa del add-on**, y esta medido: desde fuera, el 8099 contesta `200` en texto plano, sin
-redireccion y sin HSTS. Lo que se hace es ofrecer un camino que no tiene ese problema, y decir en
-el log que existe.
+**That is not the add-on**, and it is measured rather than assumed: from outside, port 8099 answers
+`200` in plain HTTP, with no redirect and no HSTS header. So rather than fight it, the add-on now
+offers a path that cannot have the problem, and says in the log that it is there.
 
 ## 0.4.0
 
