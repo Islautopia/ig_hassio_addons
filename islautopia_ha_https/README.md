@@ -5,6 +5,21 @@ account, no port forwarding.**
 
 ---
 
+### The **OPEN WEB UI** button, in one paragraph
+
+It opens the trust page, and that page does exactly one thing: it hands this device the small
+certificate file that makes your **local** address trusted — `https://<your-ha-ip>:8443`, no
+browser warning, and the microphone allowed, which is what two-way audio needs.
+
+**You do it once per device**, on the device itself, and only if you want the local address to keep
+working while your internet is down. Everything else here needs no action from you at all: the
+public hostname is trusted out of the box.
+
+The page shows the certificate's fingerprint and tells you to compare it against the one in this
+add-on's **Log** tab before installing anything. That comparison is the point — do not skip it.
+
+---
+
 > **This is not a Nabu Casa alternative, and it does not compete with it.** This app gives you no
 > remote access to Home Assistant whatsoever — the public hostname it uses only ever resolves to
 > your **local** IP address, which is unreachable from outside your network by design (see

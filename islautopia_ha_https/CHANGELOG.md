@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.6.0
+
+### Fixed
+
+- **The button added in 0.5.0 went nowhere.** `webui` substitutes `[HOST]` with the hostname the
+  user opened Home Assistant with - not with the machine's address. Anyone reaching Home Assistant
+  through their own reverse proxy landed on `http://their-domain:8099`, where that port simply does
+  not exist. `[HOST]` is mandatory in that field, so `webui` cannot work for this add-on at all: it
+  was the wrong tool, not a wrong value.
+
+  The button now goes through **ingress**, which serves the page through Home Assistant itself, on
+  its own origin. That works however you reach Home Assistant - reverse proxy, Nabu Casa, raw IP -
+  and it arrives over Home Assistant's own TLS, so none of the things a browser does to a plain
+  `http://` URL apply to it.
+
+### Added
+
+- **The page says what the button is for**, in the add-on's own view. It opens the trust page, and
+  that page does one thing: it hands this device the certificate that makes the local address
+  trusted with no internet - one device, once, and optional. A button with no explanation on the
+  screen you are already looking at is a button nobody presses, or one pressed without knowing
+  what for.
+
+  Port 8099 stays exposed on purpose. Ingress needs Home Assistant to be up, and this page exists
+  precisely for the day the house has no internet. Two paths to one page, and neither is spare.
+
 ## 0.5.0
 
 All of this came out of installing it from the add-on store for the first time.

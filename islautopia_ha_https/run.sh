@@ -588,7 +588,10 @@ write_portal() {
 
 <div class="card">
   <h2>Step 2 &mdash; download it</h2>
-  <p><a class="btn" href="/ca.crt" download>Download the certificate</a></p>
+  <!-- Relative on purpose: under ingress this page is served beneath
+       /api/hassio_ingress/<token>/, so an absolute /ca.crt would leave the add-on
+       entirely. Relative works identically on the plain port. -->
+  <p><a class="btn" href="ca.crt" download>Download the certificate</a></p>
   <p class="muted" style="margin-top:16px">Issued by: <code>${ca_name}</code></p>
 </div>
 
@@ -865,8 +868,10 @@ echo " LOCAL ACCESS - works with or without internet:"
 print_highlighted_url "https://${PRIMARY_IP}:${HTTPS_PORT}"
 echo ""
 echo " For that address to be trusted - no browser warning, microphone"
-echo " allowed - each device installs one small file, once. Open this"
-echo " page on the device and follow it:"
+echo " allowed - each device installs one small file, once. The easiest"
+echo " way in is the OPEN WEB UI button on this add-on's own page, which"
+echo " works however you reach Home Assistant. This one is the same page,"
+echo " reachable even when Home Assistant is not:"
 print_highlighted_url "http://${PRIMARY_IP}:${PORTAL_PORT}"
 echo ""
 echo " That one is plain HTTP on purpose: it is the only path that works"
