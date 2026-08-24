@@ -690,25 +690,28 @@ write_portal() {
 
 <div class="card">
   <h2>Step 4 &mdash; check it worked, then tell Home Assistant</h2>
-  <p>Copy this address. You need it twice, and neither time is a link any use:</p>
+  <p>You need this address twice &mdash; once to check it, once to tell Home Assistant about
+  it:</p>
   <p>
+    <a class="btn" href="https://${PRIMARY_IP}:${HTTPS_PORT}/"
+       target="_blank" rel="noopener">Open it in a new tab</a>
     <button class="btn" id="copiar" type="button"
             data-url="https://${PRIMARY_IP}:${HTTPS_PORT}/">Copy the address</button>
     <span id="copiado" class="muted" role="status" aria-live="polite"></span>
   </p>
   <p><code id="direccion">https://${PRIMARY_IP}:${HTTPS_PORT}/</code></p>
   <ol>
-    <li><strong>Paste it into a new browser tab.</strong> Home Assistant should load with a
-        padlock and no security warning at all. If your browser still complains, the
-        certificate isn't trusted yet &mdash; on iPhone or iPad that almost always means part
-        two above hasn't been done.</li>
+    <li><strong>Open it.</strong> Home Assistant should load with a padlock and no security
+        warning at all. If your browser still complains, the certificate isn't trusted yet
+        &mdash; on iPhone or iPad that almost always means part two above hasn't been done.</li>
     <li><strong>Once that works, paste it into Home Assistant itself</strong>, under
         <strong>Settings &rarr; System &rarr; Network &rarr; Home Assistant URL</strong>. From
         then on the rest of Home Assistant uses it by itself.</li>
   </ol>
-  <p class="muted">There is no button that just opens it, on purpose: this page is served
-  inside Home Assistant, so a link here would open Home Assistant nested inside a panel of
-  itself. And the second step needs the address in a field, which no link can do.</p>
+  <p class="muted">The link opens a new tab on purpose. This page is often shown inside Home
+  Assistant, and opening it in place would put Home Assistant inside a panel of itself. If
+  nothing happens when you click it, your browser has blocked the new tab &mdash; copy the
+  address instead and paste it yourself. Step two needs it pasted anyway.</p>
   <p class="muted">Use this numeric address rather than <code>homeassistant.local</code>.
   Names ending in <code>.local</code> are resolved by a neighbour-discovery mechanism that
   does not travel between networks, so if your phone and your Home Assistant sit on

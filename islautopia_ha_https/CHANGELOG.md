@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.0
+
+### Added
+
+- **Open it in a new tab**, next to the copy button. That is the comfortable way, and it does not
+  nest Home Assistant inside itself: a new tab is a top-level window, so it escapes the frame this
+  page is shown in.
+
+  **Both are there, and not out of indecision** - each covers exactly the way the other fails, and
+  neither can be taken for granted from outside. Whether the frame allows opening a tab depends on
+  how Home Assistant embeds it; copying depends on a secure context, and this page is also served
+  over plain HTTP on port 8099, where the clipboard API does not exist at all. If the tab is
+  blocked, the page says so and points at the copy button.
+
+  And there is a reason beyond redundancy: the address is needed twice, and the second time is
+  pasting it into a field in Home Assistant. No link does that.
+
 ## 0.7.0
 
 ### Fixed

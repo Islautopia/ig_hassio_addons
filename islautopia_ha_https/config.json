@@ -1,6 +1,6 @@
 {
   "name": "Islautopia HTTPS for Home Assistant",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "slug": "islautopia_ha_https",
   "description": "Real HTTPS for your whole Home Assistant instance, with or without internet - no domain, no DNS account, no port forwarding. OPEN WEB UI below gives this device the certificate that keeps your local address trusted while the internet is down: once per device, and optional.",
   "url": "https://github.com/Islautopia/ig_hassio_addons/tree/main/islautopia_ha_https",
