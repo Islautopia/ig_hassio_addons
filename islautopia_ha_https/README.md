@@ -11,9 +11,13 @@ It opens the trust page, and that page does exactly one thing: it hands this dev
 certificate file that makes your **local** address trusted — `https://<your-ha-ip>:8443`, no
 browser warning, and the microphone allowed, which is what two-way audio needs.
 
-**You do it once per device**, on the device itself, and only if you want the local address to keep
-working while your internet is down. Everything else here needs no action from you at all: the
-public hostname is trusted out of the box.
+**You do it once per device**, on the device itself. That is the whole of what this app asks of
+you, and what it buys is an address that keeps working with your internet down and nothing outside
+your house involved.
+
+If you own an **IG Doorbell**, put its identifier in this add-on's configuration and you also get a
+public hostname that every browser already trusts, with nothing to install on any device at all.
+Without one, everything above still works exactly as described — that path is the app.
 
 The page shows the certificate's fingerprint and tells you to compare it against the one in this
 add-on's **Log** tab before installing anything. That comparison is the point — do not skip it.
@@ -36,14 +40,15 @@ port 8443, and keeps it working when your internet does not.
 It does that with **two certificates at the same time**, handing each browser whichever one fits
 how that browser arrived:
 
-| You reach Home Assistant at… | Certificate served | Needs internet? | Setup on your devices |
-|---|---|---|---|
-| `https://<your-id>.ha.doorbell.islautopia.com:8443` | Real Let's Encrypt | Yes, to look the name up | None |
-| `https://192.168.x.y:8443` (your local IP) | Issued by this app itself | No, ever | Install one file, once |
+| You reach Home Assistant at… | Certificate served | Needs internet? | Setup on your devices | Available |
+|---|---|---|---|---|
+| `https://192.168.x.y:8443` (your local IP) | Issued by this app itself | No, ever | Install one file, once | Always |
+| `https://<your-id>.ha.doorbell.islautopia.com:8443` | Real Let's Encrypt | Yes, to look the name up | None | With an IG Doorbell |
 
-The first row is the zero-effort path and works out of the box. The second row is the one that
-survives an outage, and it costs about a minute per device. **Use just the first, just the second,
-or both.** Nothing about the first row changed to make the second possible.
+**The first row is the app.** It survives an outage, depends on nobody, and costs about a minute
+per device. The second is a hosted service we run — a name, its DNS record and a public
+certificate renewed for as long as your instance lives — and it comes with an IG Doorbell.
+**Use just the first, or both.**
 
 ## 2. What it's for
 
@@ -239,8 +244,11 @@ Read this before installing. These are precise on purpose — please don't skim.
 
 ## 6. Required configuration
 
-**None.** No options, no YAML, no fields to fill in. Unlike a doorbell, a Home Assistant instance
-has no factory identity, so there is nothing meaningful to ask you for. Install, start, done.
+**None.** One optional field, and empty is a complete, working app: install, start, done.
+
+`ig_doorbell_id` — the identifier of an IG Doorbell on this network. Fill it in and you also get
+the public hostname of the second row above. Leave it empty and the app runs entirely on your own
+network with its own certificate authority, which is what it is for.
 
 To be precise rather than imply something untrue: **one step is genuinely yours**, because the app
 cannot change your bookmarks or your existing Home Assistant URL setting by itself.

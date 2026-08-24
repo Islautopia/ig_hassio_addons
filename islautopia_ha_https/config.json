@@ -1,8 +1,8 @@
 {
   "name": "Islautopia HTTPS for Home Assistant",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "slug": "islautopia_ha_https",
-  "description": "Real HTTPS for your whole Home Assistant instance, with or without internet - no domain, no DNS account, no port forwarding. OPEN WEB UI below gives this device the certificate that keeps your local address trusted while the internet is down: once per device, and optional.",
+  "description": "Real HTTPS for your whole Home Assistant instance, on your own network, with or without internet - no domain, no DNS account, no port forwarding, and nothing outside your house to depend on. OPEN WEB UI below gives a device the certificate that makes that address trusted: once per device, and optional. Own an IG Doorbell? Put its identifier in the configuration and you also get a public hostname every browser already trusts, with nothing to install.",
   "url": "https://github.com/Islautopia/ig_hassio_addons/tree/main/islautopia_ha_https",
   "arch": [
     "aarch64",
@@ -24,8 +24,12 @@
     "8443/tcp": "Secure HTTPS access to Home Assistant",
     "8099/tcp": "Trust portal: downloads the certificate that keeps HTTPS working without internet (optional, plain HTTP by design)"
   },
-  "options": {},
-  "schema": {},
+  "options": {
+    "ig_doorbell_id": ""
+  },
+  "schema": {
+    "ig_doorbell_id": "str?"
+  },
   "ingress": true,
   "ingress_port": 8099
 }

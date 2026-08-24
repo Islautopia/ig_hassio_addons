@@ -23,10 +23,13 @@ account, no port forwarding.**
 
 ## The two addresses
 
-| Address | Certificate | Works offline? | Per-device setup |
-|---|---|---|---|
-| `https://<your-id>.ha.doorbell.islautopia.com:8443` | Real Let's Encrypt | No — the name needs public DNS | None |
-| `https://<your-local-ip>:8443` | Issued by this app | **Yes, always** | Install one file, once |
+| Address | Certificate | Works offline? | Per-device setup | Available |
+|---|---|---|---|---|
+| `https://<your-local-ip>:8443` | Issued by this app | **Yes, always** | Install one file, once | Always |
+| `https://<your-id>.ha.doorbell.islautopia.com:8443` | Real Let's Encrypt | No — the name needs public DNS | None | With an IG Doorbell |
+
+The second row is a hosted service rather than a feature of this app: set `ig_doorbell_id` in the
+configuration to switch it on. Everything else here works without it.
 
 Both are served on the same port simultaneously. Which one you get is decided automatically, per
 connection, from the name your browser announces when the connection opens. A bare IP address

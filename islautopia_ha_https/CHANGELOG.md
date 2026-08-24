@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.9.0
+
+### Changed
+
+- **This add-on no longer needs our servers to give you HTTPS.** Its own certificate authority
+  does the whole job, on your own network, with the internet up or down. Nothing is registered
+  anywhere, nothing is contacted, and it keeps working whatever becomes of us. That was always the
+  interesting half, and it is now the whole of what a fresh install does.
+
+- **The public hostname is part of an IG Doorbell installation.** It is a hosted service rather
+  than a feature of this app: a name, its DNS record, and a certificate we obtain and renew for
+  your instance for as long as it lives. If you have an IG Doorbell, put its identifier in this
+  add-on's configuration and it is set up exactly as before.
+
+  Instances that already registered are unaffected. Registration happens once, on first boot, and
+  an instance that has been through it never asks again.
+
+### Why
+
+A certificate that every browser already trusts, with nothing to install on any device, has to be
+issued by a public authority — and public authorities meter issuance per domain, renewals included.
+That meter is shared between everything under `islautopia.com`, so an unbounded number of Home
+Assistant instances renewing every couple of months would eventually be spending the allowance that
+doorbells need to come online. Attaching it to the product it was built alongside is what lets us
+offer it properly instead of thinly.
+
+What you give up without it is one step: each device installs a small file, once, from the button
+on this page. What you get is an add-on with nothing outside your house in its path.
+
+### What an IG Doorbell is
+
+A video doorbell that keeps its recordings on its own SD card and runs its AI on the device — no
+frame and no second of audio is stored on anyone's server, ours included. It speaks WebRTC natively
+and has a Home Assistant integration. <https://islautopia.com>
+
 ## 0.8.0
 
 ### Added

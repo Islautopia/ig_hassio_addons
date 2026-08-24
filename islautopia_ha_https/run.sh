@@ -117,6 +117,22 @@ adopt_legacy() {
 }
 adopt_legacy
 
+# The IG Doorbell this installation belongs to. Empty by default, and empty is a complete,
+# working add-on: the private certificate authority does the whole job on your own network.
+#
+# What the identifier buys is the OTHER half -- a public hostname, its DNS record and a
+# certificate from a public authority, which is a service running on our servers and renewing
+# itself for as long as this installation lives. It is offered with the doorbell.
+# Read raw, and deliberately WITHOUT trimming or lower-casing it here.
+#
+# Both of those belong on the server, which already does them, and which is somewhere they can
+# actually be tested. Every extra step in this pipeline is another place that answers "empty" when
+# it breaks -- and empty here does not mean "broken", it means "this user has no doorbell", so the
+# add-on would quietly take the wrong path and say so in a reassuring voice. `tr -d [:space:]`
+# needs a tr that understands character classes; jq's `gsub` needs a jq built with regex support.
+# Neither could be verified from here, and both fail exactly that way.
+IG_DOORBELL_ID="$(jq --raw-output '.ig_doorbell_id // ""' /data/options.json 2>/dev/null)"
+
 ha_instance_id=""
 ha_secret=""
 HOSTNAME_PUBLIC=""
@@ -385,11 +401,46 @@ ensure_identity() {
         return 1
     fi
 
+    if [ -z "$IG_DOORBELL_ID" ]; then
+        # Said once, at first boot, and then never again -- this function is also called by the
+        # background retry loop, and an add-on that repeats the same paragraph every few minutes
+        # trains its owner to stop reading the log.
+        if [ ! -f "$DATA_DIR/.said_no_doorbell" ]; then
+            echo ""
+            echo "  Running on this network only, with this app's own certificate authority."
+            echo "  That is the whole feature: HTTPS that works with the internet down, with"
+            echo "  nothing outside your house involved. Nothing is missing and nothing failed."
+            echo ""
+            echo "  A public hostname - one every browser already trusts, with nothing to"
+            echo "  install on each device - comes with an IG Doorbell. Put its identifier in"
+            echo "  this add-on's configuration and it is set up for you."
+            echo "  https://islautopia.com"
+            echo ""
+            : > "$DATA_DIR/.said_no_doorbell" 2>/dev/null || true
+        fi
+        return 1
+    fi
+
     echo "No cloud identity yet - registering this Home Assistant instance..."
     local response id secret
-    response=$(curl -sS -X POST "$API_BASE/ha_instance/register" --max-time 30 2>&1)
+    response=$(curl -sS -X POST "$API_BASE/ha_instance/register" --max-time 30         -H "Content-Type: application/json"         -d "{\"device_id\":\"$IG_DOORBELL_ID\"}" 2>&1)
     id=$(echo "$response" | jq --raw-output '.ha_instance_id // empty' 2>/dev/null)
     secret=$(echo "$response" | jq --raw-output '.ha_secret // empty' 2>/dev/null)
+
+    if echo "$response" | grep -q "device_id_required"; then
+        echo "The IG Doorbell identifier in this add-on's configuration is blank once"
+        echo "  trimmed. Type it in again, or leave it empty on purpose: HTTPS on your own"
+        echo "  network works either way and needs nothing from us."
+        return 1
+    fi
+
+    if echo "$response" | grep -q "device_not_authorized"; then
+        echo "That IG Doorbell identifier is not one we recognise: $IG_DOORBELL_ID"
+        echo "  Check it against the one your doorbell reports, and correct it in this"
+        echo "  add-on's configuration. Everything else keeps working meanwhile: HTTPS on"
+        echo "  your own network does not depend on this at all."
+        return 1
+    fi
 
     if [ -z "$id" ] || [ -z "$secret" ]; then
         echo "Could not reach the cloud to register (no internet, or the service is down)."
