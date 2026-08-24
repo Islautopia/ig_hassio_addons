@@ -745,18 +745,18 @@ write_caddyfile() {
 	}
 }
 
-# El portal de confianza, servido tambien por HTTPS. Se importa desde LOS DOS sitios de :8443
-# -- el del hostname publico y el catch-all-- en vez de repetirlo, porque una defensa repartida
-# en dos sitios se cae en cuanto uno se queda atras.
+# The trust portal, served over HTTPS as well. Imported by BOTH sites on :8443 -- the public
+# hostname one and the catch-all -- rather than repeated, because a defence that lives in two
+# places falls over as soon as one of them is left behind.
 #
-# ⚠️ POR QUE IMPORTA QUE ESTE EN EL DEL HOSTNAME PUBLICO, que es donde faltaba: ese sitio lleva un
-# certificado de Let's Encrypt de verdad, asi que su enlace **lo abre cualquier navegador sin un
-# solo aviso**. El del puerto 8099 va en HTTP plano a proposito -- es el unico camino que funciona
-# sin internet-- y eso lo deja a merced de todo lo que un navegador moderno hace con un `http://`:
-# subirlo a https por su cuenta, recordar una redireccion vieja, servir la pagina de la cache. Le
-# paso a Inaki el 2026-08-24: tuvo que abrirlo de incognito. El add-on no manda ni HSTS ni
-# redireccion (medido con curl desde fuera: 200 en texto plano), asi que no era cosa nuestra --
-# pero teniendo un camino inmune, hay que ofrecerlo.
+# ⚠️ WHY IT MATTERS THAT THE PUBLIC-HOSTNAME SITE HAS IT, which is where it was missing: that
+# site carries a real Let's Encrypt certificate, so its link opens in any browser without a single
+# warning. The one on port 8099 is plain HTTP on purpose -- it is the only path that works with no
+# internet at all -- and that leaves it at the mercy of everything a modern browser does with an
+# `http://` URL: upgrading it to https by itself, remembering an old redirect, serving the page
+# from cache. That happened on the first real install: it took a private window to get through.
+# The add-on sends neither HSTS nor a redirect (measured with curl from outside: 200 in plain
+# HTTP), so it was never ours to fix -- but having a path that is immune to it, offer it.
 (portal) {
 	handle /islautopia/ca.crt {
 		root * ${PORTAL_DIR}
