@@ -119,7 +119,14 @@ approaches, or whenever anything else needs to change. No device is touched agai
 **Lifetimes.** Root: 10 years. Leaf: 398 days, staying under the cap Apple and Chrome apply to
 server certificates, reissued automatically 30 days before expiry. The root signs leaves directly,
 with no intermediate — an intermediate would add no real security when both keys sit in the same
-private volume. Same choice `mkcert` makes.
+place. Same choice `mkcert` makes.
+
+**Where the authority lives.** In the `ssl` share, under `islautopia_ha_https/ca/`, not in the
+app's private volume. That volume is destroyed when the app is uninstalled, and it is a different
+volume for a local copy and one installed from a repository — so keeping the authority there meant
+a reinstall silently issued a new one and every device that trusted the old root stopped trusting
+the app. The `ssl` share survives both, and it is where Home Assistant already keeps its own
+certificate and key.
 
 **Certificate selection.** Two Caddy site blocks on port 8443: one addressed by the public
 hostname, one catch-all. Caddy matches the block by the name announced at connection start, so a

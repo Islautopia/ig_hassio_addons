@@ -1,47 +1,46 @@
-# Islautopia Garage Home Assistant Add-ons
+# Islautopia Add-ons for Home Assistant
 
-Welcome to the official **Islautopia Garage** add-on repository for Home Assistant.
+The official add-on repository for **Islautopia Garage**. Local-first, privacy-first, no
+third-party cloud subscription required.
 
-This repository hosts professional-grade, privacy-first, and high-performance local gateways. Our software is engineered to maximize local reliability and security without relying on third-party cloud subscriptions.
-
-## 📦 Available Add-ons
+## Available add-ons
 
 ### [Islautopia HTTPS for Home Assistant](./islautopia_ha_https)
-Real, zero-configuration HTTPS certificate for your whole Home Assistant instance — no domain, no
-DNS account, no port forwarding. Solves the "browser blocks the microphone because HA itself
-isn't served over HTTPS" problem, which the certificate on the doorbell itself cannot fix (that
-cert only secures the connection *to the doorbell*, not the origin serving your HA dashboard).
-**Not a Nabu Casa alternative** — it gives no remote access at all, only real local HTTPS. See
-the add-on's own README for the full "Security and privacy" explanation before installing.
 
-### [Islautopia Intercom Engine](./islautopia_intercom)
-⚠️ **If you own an Islautopia Doorbell (IG Doorbell hardware), install
-[`islautopia-doorbell-integration`](https://github.com/Islautopia/islautopia-doorbell-integration)
-instead** (HACS integration, zero YAML, native WebRTC/HTTPS/TURN, auto-dispatches "open door"
-MQTT messages). This add-on remains fully supported, unchanged, as a **generic RTSP/`go2rtc`
-gateway for third-party video intercoms** — see the add-on's own README for the full picture.
+Real HTTPS for your **whole** Home Assistant instance — no domain, no DNS account, no port
+forwarding, and it keeps working with no internet at all.
 
-The definitive WebRTC and autonomous local HTTPS/SSL gateway for RTSP-based video doorbells. 
-It resolves modern browser security blocks regarding microphone access by providing an automated local SSL proxy and an integrated, standalone `go2rtc` instance. 
+It exists because of a browser rule that nothing else can work around: a page served over plain
+`http://` is not a *secure context*, and browsers refuse microphone access there. So two-way audio
+in any dashboard card is impossible until Home Assistant **itself** is served over HTTPS. The
+certificate on a doorbell cannot fix this — that certificate secures the connection *to the
+doorbell*, not the origin serving your dashboard.
 
-> 🚀 **Perfect Companion:** This engine is designed to work flawlessly with the **[Islautopia Intercom Card](https://github.com/Islautopia/islautopia-intercom-card)**. We highly recommend installing the custom card via HACS for the ultimate, zero-latency 2-way audio dashboard experience.
+Two independent paths, both on port 8443 at once, each browser automatically getting whichever one
+matches how it connected:
 
-*(More advanced tools for the Islautopia Garage ecosystem will be added over time).*
+| path | what it needs | what it gives |
+|---|---|---|
+| **Public hostname** | a name lookup, so an internet connection | a real Let's Encrypt certificate, nothing to install on any device |
+| **Local certificate authority** | nothing at all | HTTPS on bare LAN addresses, once you install its root on a device |
 
-## ⚙️ Installation Guide
+**Not a Nabu Casa alternative.** It gives no remote access whatsoever — only real local HTTPS.
+Read the add-on's own "Security and privacy" section before installing.
 
-To install any of our add-ons, you need to add this custom repository to your Home Assistant instance:
+## Installation
 
-1. In Home Assistant, navigate to **Settings > Add-ons**.
-2. Click the **Add-on Store** button in the bottom-right corner.
-3. Click the **three vertical dots** in the top-right corner and select **Repositories**.
-4. Copy and paste the following URL, then click **Add**:
-   `https://github.com/Islautopia/ig_hassio_addons`
-5. Close the popup window.
-6. Click the three vertical dots again and select **Check for updates** (or Reload).
+1. **Settings → Add-ons → Add-on Store**.
+2. Three dots, top right → **Repositories**.
+3. Add `https://github.com/Islautopia/ig_hassio_addons`, then close.
+4. The add-on appears in the store. Install it, start it, and follow its log.
 
-Scroll down to the bottom of the Add-on Store page, and you will find the new **"Islautopia Add-ons"** section with our gateway ready to be installed with a single click.
+> **Install it from this repository, not as a local add-on.** A local add-on — a folder copied into
+> the `addons` share — never updates: Home Assistant has no repository to pull from, so "check for
+> updates" has nothing to check. Installed from here, it updates like any other add-on.
 
-## 📞 Support & Partnership
-Developed and maintained for the Islautopia Garage ecosystem.
-For technical questions, integrations, or general inquiries, please contact us at: [garage@islautopia.com](mailto:garage@islautopia.com)
+## If you own an Islautopia Doorbell
+
+You want the [integration](https://github.com/Islautopia/islautopia-doorbell-integration) and the
+[card](https://github.com/Islautopia/islautopia-intercom-card), both via HACS. This add-on is
+independent of them — it solves the HTTPS problem for Home Assistant as a whole, and is worth
+having whether or not you own our hardware.

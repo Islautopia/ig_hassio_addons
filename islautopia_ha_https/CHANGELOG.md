@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.4.0
+
+**Fixed: reinstalling the app used to throw away the two things it must never regenerate.** The
+cloud identity and the private certificate authority lived in the app's own private volume, which
+Home Assistant destroys on uninstall — and which is also separate for a local copy and one
+installed from a repository. So moving an existing install to the add-on store came back looking
+perfectly healthy **at a different address, with an authority no device trusted**. Nothing failed
+and nothing said anything; the public hostname simply stopped being the one in your bookmarks and
+in Home Assistant's own network setting.
+
+Both now live in the `ssl` share, which survives all of that and is where Home Assistant already
+keeps certificates. Anything that can be regenerated — the Let's Encrypt certificate, the cached
+addresses — stays in the private volume, where losing it costs nothing.
+
+**New: the durable store doubles as a drop-in.** Put a `ha_instance.json` (and a `ca/`, if you have
+one) into `ssl/islautopia_ha_https/` before the first start and the app adopts them instead of
+minting new ones. That is what makes moving an existing installation to the add-on repository free:
+same hostname, same authority, nothing to reinstall on any device.
+
+An identity or authority left in the old private volume is adopted automatically on first start.
+The copy only ever goes **into** the durable store and only when it is empty, so running it twice
+cannot overwrite a good copy with a stale one.
+
+**Worth knowing before you upgrade:** the authority's private key now sits in the `ssl` share
+rather than in the app's private volume. That share is the conventional place for exactly this kind
+of file — Home Assistant's own certificate and key live there — and anyone who can reach it can
+already edit your configuration, so it does not widen who can get at it. It is said out loud rather
+than left to be discovered.
+
 ## 0.3.0
 
 **Fixed: the app could not start at all without internet.** If the certificate fetch failed and

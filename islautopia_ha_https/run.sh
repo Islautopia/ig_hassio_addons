@@ -29,8 +29,34 @@ set -u
 # ==============================================================================
 # 0. PATHS & CONSTANTS
 # ==============================================================================
+# The add-on's own volume. Fast, private -- and DESTROYED when the add-on is
+# uninstalled or reinstalled from a different source. Everything that can be
+# regenerated lives here.
 DATA_DIR="/data"
-IDENTITY_FILE="$DATA_DIR/ha_instance.json"
+
+# ==============================================================================
+# DURABLE STORE -- the two things that must NOT be regenerated
+#
+# The cloud identity and the private CA are not caches: they are the app's
+# lasting promises to the outside world.
+#
+#   * The identity decides the public hostname, `<id>.ha.doorbell.islautopia.com`.
+#     Mint a new one and the old address stops resolving -- bookmarks, and Home
+#     Assistant's own "Home Assistant URL" setting, all point at nothing.
+#   * The CA root is "the one artefact a human installs by hand on every device",
+#     which is exactly the sentence that makes losing it expensive.
+#
+# Both used to live in /data, so a reinstall silently threw them away and the
+# app came back looking healthy at a NEW address with a CA nobody trusted. The
+# `ssl` share survives that, and it is where Home Assistant already expects
+# certificates to live.
+#
+# It doubles as a drop-in: put a `ha_instance.json` and a `ca/` in there before
+# first start and the app adopts them instead of minting new ones. That is what
+# makes moving an existing install to this repository free.
+DURABLE_DIR="/ssl/islautopia_ha_https"
+
+IDENTITY_FILE="$DURABLE_DIR/ha_instance.json"
 
 # --- Let's Encrypt certificate (public hostname path) -------------------------
 CERT_DIR="$DATA_DIR/certs"
@@ -39,7 +65,7 @@ KEY_FILE="$CERT_DIR/privkey.pem"
 HASH_FILE="$CERT_DIR/cert.hash"
 
 # --- Private CA (offline path) ------------------------------------------------
-CA_DIR="$DATA_DIR/ca"
+CA_DIR="$DURABLE_DIR/ca"
 CA_CERT="$CA_DIR/ca.crt"
 CA_KEY="$CA_DIR/ca.key"
 LEAF_CERT="$CA_DIR/local.crt"
@@ -72,8 +98,24 @@ LEAF_RENEW_BEFORE=$((30 * 24 * 3600))
 API_BASE="https://relay.doorbell.islautopia.com"
 DOMAIN_SUFFIX="ha.doorbell.islautopia.com"
 
-mkdir -p "$CERT_DIR" "$CA_DIR" "$PORTAL_DIR"
+mkdir -p "$CERT_DIR" "$DURABLE_DIR" "$CA_DIR" "$PORTAL_DIR"
 chmod 700 "$CA_DIR"
+
+# --- Adopt anything left in the old location ----------------------------------
+# Only ever copies INTO the durable store, and only when it is empty, so running
+# this twice cannot overwrite the good copy with a stale one. Silent when there
+# is nothing to do, which is every start after the first.
+adopt_legacy() {
+    local legacy_id="$DATA_DIR/ha_instance.json"
+    local legacy_ca="$DATA_DIR/ca"
+    if [ ! -f "$IDENTITY_FILE" ] && [ -f "$legacy_id" ]; then
+        cp "$legacy_id" "$IDENTITY_FILE" &&             echo "Adopted the existing cloud identity from this app's old private volume."
+    fi
+    if [ ! -f "$CA_KEY" ] && [ -f "$legacy_ca/ca.key" ]; then
+        cp -a "$legacy_ca/." "$CA_DIR/" && chmod 700 "$CA_DIR" &&             echo "Adopted the existing certificate authority from this app's old private volume."
+    fi
+}
+adopt_legacy
 
 ha_instance_id=""
 ha_secret=""
