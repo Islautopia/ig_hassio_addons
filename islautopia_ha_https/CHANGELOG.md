@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.1
+
+### Fixed
+
+- **The explanation of the button was nowhere near the button.** 0.6.0 put it at the top of the
+  README, which Home Assistant renders in a separate card further down the page - so it was there
+  for someone reading the documentation and useless for someone looking at the button.
+
+  The only text Home Assistant paints next to that button is the add-on's own description, so that
+  is where it goes now, using the button's exact words.
+
+  The button's caption itself cannot be changed: "OPEN WEB UI" is Home Assistant's own frontend
+  text and no add-on field touches it. Naming it from the line beside it is the whole of the
+  available lever.
+
 ## 0.6.0
 
 ### Fixed
